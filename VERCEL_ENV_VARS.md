@@ -5,9 +5,20 @@ When deploying to Vercel, set these environment variables in your project settin
 ## Required Variables
 
 ### 1. DATABASE_URL
+**⚠️ IMPORTANT: Use Transaction Pooler for Vercel/Serverless!**
+
+Get the pooler connection string from Supabase:
+1. Go to Supabase Dashboard → Settings → Database
+2. Select **"Transaction Pooler"** tab (not Direct)
+3. Select **"URI"** format
+4. Copy the connection string (should use port **6543**)
+
+**Example (Pooler - Recommended for Vercel):**
 ```
-postgresql://postgres:HSQsExIVRutPiClL@db.yfqcfxxuefrprxzngkhk.supabase.co:5432/postgres
+postgresql://postgres.yfqcfxxuefrprxzngkhk:HSQsExIVRutPiClL@aws-0-[REGION].pooler.supabase.com:6543/postgres
 ```
+
+**❌ Don't use Direct Connection (Port 5432) for Vercel - it won't work!**
 
 ### 2. NEXTAUTH_URL
 ```
