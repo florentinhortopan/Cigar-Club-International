@@ -42,15 +42,25 @@ export const authOptions: NextAuthOptions = {
           // NextAuth will handle the callback when the link is clicked
         },
       }),
-              ...(process.env.NODE_ENV === 'production' && resend && {
-                sendVerificationRequest: async ({ identifier: email, url }) => {
-                  // In production, send actual email via Resend
-                  if (!resend) {
-                    console.error('RESEND_API_KEY not configured');
-                    return;
-                  }
-                  try {
-                    await resend.emails.send({
+              ...(process.env.NODE_ENV === 'production' && {
+                sendVerificationRequest: async ({ identifier: email, url, token }) => {
+                  // Always log the magic link in production (visible in Vercel logs)
+                  console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+                  console.log('🔐 MAGIC LINK (Production Mode)');
+                  console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+                  console.log(`📧 Email: ${email}`);
+                  console.log(`🔗 Link: ${url}`);
+                  console.log(`🎟️  Token: ${token}`);
+                  console.log(`⏰ Expires: 24 hours from now`);
+                  console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+                  console.log('💡 Check Vercel Function Logs to see this link!');
+                  console.log('💡 Or set RESEND_API_KEY to send actual emails');
+                  console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n');
+                  
+                  // If Resend is configured, send actual email
+                  if (resend) {
+                    try {
+                      await resend.emails.send({
               from: process.env.EMAIL_FROM || 'noreply@humidor.club',
               to: email,
               subject: 'Sign in to Humidor Club',
@@ -97,12 +107,17 @@ export const authOptions: NextAuthOptions = {
               </html>
             `,
             });
-          } catch (error) {
-            console.error('Error sending email:', error);
-            throw error;
-          }
-        },
-      }),
+                    } catch (error) {
+                      console.error('Error sending email via Resend:', error);
+                      // Don't throw - let the magic link still work via console log
+                      console.log('⚠️ Email not sent, but magic link is available in logs above');
+                    }
+                  } else {
+                    console.log('⚠️ RESEND_API_KEY not configured - email not sent');
+                    console.log('📋 The magic link above can be used to sign in');
+                  }
+                },
+              }),
     }),
   ],
   pages: {
