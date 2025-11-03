@@ -1,0 +1,955 @@
+{
+  "version": "0.1.0",
+  "source": "Humidor Club seed (curated)",
+  "brands": [
+    {
+      "id": "750b862552fe",
+      "name": "A.J. Fernandez",
+      "is_cuban": false,
+      "owner_company": "A.J. Fernandez",
+      "primary_country": "Nicaragua",
+      "primary_factory": "San Lotano",
+      "alt_names": []
+    },
+    {
+      "id": "cc3b8191bb84",
+      "name": "ACID",
+      "is_cuban": false,
+      "owner_company": "Drew Estate",
+      "primary_country": "Nicaragua",
+      "primary_factory": "La Gran Fabrica Drew Estate",
+      "alt_names": []
+    },
+    {
+      "id": "18a40816bca3",
+      "name": "Aganorsa Leaf",
+      "is_cuban": false,
+      "owner_company": "Aganorsa Leaf",
+      "primary_country": "Nicaragua",
+      "primary_factory": "TABSA",
+      "alt_names": []
+    },
+    {
+      "id": "8d02fc175d6b",
+      "name": "Aging Room",
+      "is_cuban": false,
+      "owner_company": "Altadis U.S.A. / Boutique Blends",
+      "primary_country": "Dominican Republic",
+      "primary_factory": "Tabacalera de García",
+      "alt_names": []
+    },
+    {
+      "id": "8334ff3c3d9b",
+      "name": "Alec Bradley",
+      "is_cuban": false,
+      "owner_company": "STG / Alec Bradley",
+      "primary_country": "Honduras",
+      "primary_factory": "Raices Cubanas / STG Danlí",
+      "alt_names": []
+    },
+    {
+      "id": "c70bae3551ac",
+      "name": "Arturo Fuente",
+      "is_cuban": false,
+      "owner_company": "Tabacalera A. Fuente y Cia",
+      "primary_country": "Dominican Republic",
+      "primary_factory": "Tabacalera A. Fuente y Cia",
+      "alt_names": []
+    },
+    {
+      "id": "c123dcfc7f9d",
+      "name": "Ashton",
+      "is_cuban": false,
+      "owner_company": "Ashton Distributors",
+      "primary_country": "Dominican Republic",
+      "primary_factory": "Tabacalera A. Fuente y Cia",
+      "alt_names": []
+    },
+    {
+      "id": "86111aa1ac3d",
+      "name": "Avo",
+      "is_cuban": false,
+      "owner_company": "Oettinger Davidoff",
+      "primary_country": "Dominican Republic",
+      "primary_factory": "Oettinger Davidoff (DR)",
+      "alt_names": []
+    },
+    {
+      "id": "928eee292ecb",
+      "name": "Black Label Trading Co.",
+      "is_cuban": false,
+      "owner_company": "BLTC",
+      "primary_country": "Nicaragua",
+      "primary_factory": "Fabrica Oveja Negra",
+      "alt_names": []
+    },
+    {
+      "id": "d7979af689d5",
+      "name": "Bolívar",
+      "is_cuban": true,
+      "owner_company": "Habanos S.A.",
+      "primary_country": "Cuba",
+      "primary_factory": "Partagás Factory (Francisco Perez Germán)",
+      "alt_names": []
+    },
+    {
+      "id": "1ccd86ecae30",
+      "name": "Brick House",
+      "is_cuban": false,
+      "owner_company": "J.C. Newman",
+      "primary_country": "Nicaragua",
+      "primary_factory": "J.C. Newman PENSA",
+      "alt_names": []
+    },
+    {
+      "id": "853f18fd2d48",
+      "name": "Cain",
+      "is_cuban": false,
+      "owner_company": "Oliva Cigar Co.",
+      "primary_country": "Nicaragua",
+      "primary_factory": "TABOLISA",
+      "alt_names": []
+    },
+    {
+      "id": "57ac99f5f541",
+      "name": "Caldwell",
+      "is_cuban": false,
+      "owner_company": "Caldwell Cigars",
+      "primary_country": "Dominican Republic",
+      "primary_factory": "Tabacalera William Ventura",
+      "alt_names": []
+    },
+    {
+      "id": "796be5d90005",
+      "name": "Camacho",
+      "is_cuban": false,
+      "owner_company": "Oettinger Davidoff",
+      "primary_country": "Honduras",
+      "primary_factory": "Diadema Cigars de Honduras",
+      "alt_names": []
+    },
+    {
+      "id": "ff9cb40a74e2",
+      "name": "CAO",
+      "is_cuban": false,
+      "owner_company": "General Cigar (STG)",
+      "primary_country": "Nicaragua",
+      "primary_factory": "STG",
+      "alt_names": []
+    },
+    {
+      "id": "b4e9aaae2142",
+      "name": "Casa Cuevas",
+      "is_cuban": false,
+      "owner_company": "Casa Cuevas Cigars",
+      "primary_country": "Dominican Republic",
+      "primary_factory": "Las Lavas",
+      "alt_names": []
+    },
+    {
+      "id": "fd90be23c4f9",
+      "name": "Cavalier Genève",
+      "is_cuban": false,
+      "owner_company": "Cavalier",
+      "primary_country": "Honduras/Nicaragua",
+      "primary_factory": "San Judas Tadeo / others",
+      "alt_names": []
+    },
+    {
+      "id": "0d76a7ab76a0",
+      "name": "CLE / Eiroa",
+      "is_cuban": false,
+      "owner_company": "CLE Cigar Co.",
+      "primary_country": "Honduras",
+      "primary_factory": "Aladino / Eiroa",
+      "alt_names": []
+    },
+    {
+      "id": "3bedcd849dc5",
+      "name": "Cohiba",
+      "is_cuban": true,
+      "owner_company": "Habanos S.A.",
+      "primary_country": "Cuba",
+      "primary_factory": "El Laguito",
+      "alt_names": []
+    },
+    {
+      "id": "93739fe2d645",
+      "name": "Cohiba (non-Cuban)",
+      "is_cuban": false,
+      "owner_company": "General Cigar (STG)",
+      "primary_country": "Dominican Republic",
+      "primary_factory": "General Cigar Dominicana",
+      "alt_names": []
+    },
+    {
+      "id": "f0e012dc49a0",
+      "name": "Crowned Heads",
+      "is_cuban": false,
+      "owner_company": "Crowned Heads",
+      "primary_country": "Dominican Republic",
+      "primary_factory": "Tabacalera La Alianza",
+      "alt_names": []
+    },
+    {
+      "id": "d8ad9347d320",
+      "name": "Cuaba",
+      "is_cuban": true,
+      "owner_company": "Habanos S.A.",
+      "primary_country": "Cuba",
+      "primary_factory": "Briones Montoto (Romeo y Julieta)",
+      "alt_names": []
+    },
+    {
+      "id": "a1ac50594cdb",
+      "name": "Davidoff",
+      "is_cuban": false,
+      "owner_company": "Oettinger Davidoff",
+      "primary_country": "Dominican Republic",
+      "primary_factory": "Oettinger Davidoff (DR)",
+      "alt_names": []
+    },
+    {
+      "id": "bc9e32d1008c",
+      "name": "Diamond Crown",
+      "is_cuban": false,
+      "owner_company": "J.C. Newman",
+      "primary_country": "Dominican Republic",
+      "primary_factory": "Tabacalera A. Fuente y Cia",
+      "alt_names": []
+    },
+    {
+      "id": "201c79699a13",
+      "name": "Diplomáticos",
+      "is_cuban": true,
+      "owner_company": "Habanos S.A.",
+      "primary_country": "Cuba",
+      "primary_factory": "H. Upmann Factory",
+      "alt_names": []
+    },
+    {
+      "id": "c7074aa16dc8",
+      "name": "Drew Estate",
+      "is_cuban": false,
+      "owner_company": "Drew Estate",
+      "primary_country": "Nicaragua",
+      "primary_factory": "La Gran Fabrica Drew Estate",
+      "alt_names": []
+    },
+    {
+      "id": "2fafe22e3071",
+      "name": "Dunbarton Tobacco & Trust",
+      "is_cuban": false,
+      "owner_company": "DTT",
+      "primary_country": "Nicaragua",
+      "primary_factory": "NACSA / Joya de Nicaragua",
+      "alt_names": []
+    },
+    {
+      "id": "532d2a3b4bfa",
+      "name": "E.P. Carrillo",
+      "is_cuban": false,
+      "owner_company": "E.P. Carrillo",
+      "primary_country": "Dominican Republic",
+      "primary_factory": "Tabacalera La Alianza",
+      "alt_names": []
+    },
+    {
+      "id": "82c5b00c25da",
+      "name": "El Rey del Mundo",
+      "is_cuban": true,
+      "owner_company": "Habanos S.A.",
+      "primary_country": "Cuba",
+      "primary_factory": "La Corona",
+      "alt_names": []
+    },
+    {
+      "id": "5c247ee63663",
+      "name": "Espinosa",
+      "is_cuban": false,
+      "owner_company": "Espinosa Cigars",
+      "primary_country": "Nicaragua",
+      "primary_factory": "La Zona",
+      "alt_names": []
+    },
+    {
+      "id": "25776688bc82",
+      "name": "Ferio Tego",
+      "is_cuban": false,
+      "owner_company": "Ferio Tego",
+      "primary_country": "Dominican Republic",
+      "primary_factory": "Quesada / KBF",
+      "alt_names": []
+    },
+    {
+      "id": "37309684f31c",
+      "name": "Fonseca",
+      "is_cuban": true,
+      "owner_company": "Habanos S.A.",
+      "primary_country": "Cuba",
+      "primary_factory": "Briones Montoto (Romeo y Julieta)",
+      "alt_names": []
+    },
+    {
+      "id": "5da7a842e52a",
+      "name": "Foundation Cigar Co.",
+      "is_cuban": false,
+      "owner_company": "Foundation",
+      "primary_country": "Nicaragua",
+      "primary_factory": "AJ Fernandez / Aganorsa",
+      "alt_names": []
+    },
+    {
+      "id": "9c8e0ffc23ad",
+      "name": "Gurkha",
+      "is_cuban": false,
+      "owner_company": "Gurkha Cigars",
+      "primary_country": "Dominican Republic/Nicaragua",
+      "primary_factory": "Various",
+      "alt_names": []
+    },
+    {
+      "id": "83bc1b0b9981",
+      "name": "H. Upmann",
+      "is_cuban": true,
+      "owner_company": "Habanos S.A.",
+      "primary_country": "Cuba",
+      "primary_factory": "H. Upmann Factory",
+      "alt_names": []
+    },
+    {
+      "id": "7db3e65e5202",
+      "name": "H. Upmann (non-Cuban)",
+      "is_cuban": false,
+      "owner_company": "Altadis U.S.A.",
+      "primary_country": "Dominican Republic",
+      "primary_factory": "Tabacalera de García",
+      "alt_names": []
+    },
+    {
+      "id": "94126c580a7a",
+      "name": "Hoyo de Monterrey",
+      "is_cuban": true,
+      "owner_company": "Habanos S.A.",
+      "primary_country": "Cuba",
+      "primary_factory": "La Corona",
+      "alt_names": []
+    },
+    {
+      "id": "b6a4220bc03f",
+      "name": "HVC",
+      "is_cuban": false,
+      "owner_company": "HVC Cigars",
+      "primary_country": "Nicaragua",
+      "primary_factory": "Aganorsa Leaf / TABSA",
+      "alt_names": []
+    },
+    {
+      "id": "4a9955ef79a0",
+      "name": "Illusione",
+      "is_cuban": false,
+      "owner_company": "Fumare / Illusione",
+      "primary_country": "Nicaragua",
+      "primary_factory": "Aganorsa Leaf / TABSA",
+      "alt_names": []
+    },
+    {
+      "id": "fd7edf457532",
+      "name": "José L. Piedra",
+      "is_cuban": true,
+      "owner_company": "Habanos S.A.",
+      "primary_country": "Cuba",
+      "primary_factory": "Santa Clara",
+      "alt_names": []
+    },
+    {
+      "id": "9b34f66f0a66",
+      "name": "Joya de Nicaragua",
+      "is_cuban": false,
+      "owner_company": "Joya de Nicaragua",
+      "primary_country": "Nicaragua",
+      "primary_factory": "Fábrica de Tabacos Joya de Nicaragua",
+      "alt_names": []
+    },
+    {
+      "id": "a5731989ea51",
+      "name": "Juan López",
+      "is_cuban": true,
+      "owner_company": "Habanos S.A.",
+      "primary_country": "Cuba",
+      "primary_factory": "H. Upmann Factory",
+      "alt_names": []
+    },
+    {
+      "id": "167c6b311014",
+      "name": "Kristoff",
+      "is_cuban": false,
+      "owner_company": "Kristoff Cigars",
+      "primary_country": "Dominican Republic",
+      "primary_factory": "Charles Fairmorn",
+      "alt_names": []
+    },
+    {
+      "id": "628ae1515c13",
+      "name": "La Aurora",
+      "is_cuban": false,
+      "owner_company": "La Aurora",
+      "primary_country": "Dominican Republic",
+      "primary_factory": "La Aurora",
+      "alt_names": []
+    },
+    {
+      "id": "3522c277ec2f",
+      "name": "La Flor de Cano",
+      "is_cuban": true,
+      "owner_company": "Habanos S.A.",
+      "primary_country": "Cuba",
+      "primary_factory": "La Corona",
+      "alt_names": []
+    },
+    {
+      "id": "09f9632d7478",
+      "name": "La Flor Dominicana",
+      "is_cuban": false,
+      "owner_company": "LFD",
+      "primary_country": "Dominican Republic",
+      "primary_factory": "La Flor Dominicana",
+      "alt_names": []
+    },
+    {
+      "id": "338148a9a0b1",
+      "name": "La Gloria Cubana",
+      "is_cuban": true,
+      "owner_company": "Habanos S.A.",
+      "primary_country": "Cuba",
+      "primary_factory": "Partagás Factory (Francisco Perez Germán)",
+      "alt_names": []
+    },
+    {
+      "id": "a7dcb551660e",
+      "name": "La Gloria Cubana (non-Cuban)",
+      "is_cuban": false,
+      "owner_company": "General Cigar (STG)",
+      "primary_country": "Dominican Republic",
+      "primary_factory": "General Cigar Dominicana",
+      "alt_names": []
+    },
+    {
+      "id": "32a95cbddb23",
+      "name": "Liga Privada",
+      "is_cuban": false,
+      "owner_company": "Drew Estate",
+      "primary_country": "Nicaragua",
+      "primary_factory": "La Gran Fabrica Drew Estate",
+      "alt_names": []
+    },
+    {
+      "id": "cf62df729f42",
+      "name": "Luciano Cigars",
+      "is_cuban": false,
+      "owner_company": "Luciano Cigars",
+      "primary_country": "Nicaragua",
+      "primary_factory": "Luciano / formerly ACE",
+      "alt_names": []
+    },
+    {
+      "id": "ee5f63297e8f",
+      "name": "Macanudo",
+      "is_cuban": false,
+      "owner_company": "General Cigar (STG)",
+      "primary_country": "Dominican Republic",
+      "primary_factory": "General Cigar Dominicana",
+      "alt_names": []
+    },
+    {
+      "id": "267dbd0411ae",
+      "name": "Matilde",
+      "is_cuban": false,
+      "owner_company": "Matilde Cigars",
+      "primary_country": "Dominican Republic",
+      "primary_factory": "Tabacalera Palma",
+      "alt_names": []
+    },
+    {
+      "id": "b110775a9af9",
+      "name": "Montecristo",
+      "is_cuban": true,
+      "owner_company": "Habanos S.A.",
+      "primary_country": "Cuba",
+      "primary_factory": "H. Upmann Factory",
+      "alt_names": []
+    },
+    {
+      "id": "8ba41e5a90d4",
+      "name": "Montecristo (non-Cuban)",
+      "is_cuban": false,
+      "owner_company": "Altadis U.S.A.",
+      "primary_country": "Dominican Republic",
+      "primary_factory": "Tabacalera de García",
+      "alt_names": []
+    },
+    {
+      "id": "8a4830ca832a",
+      "name": "My Father",
+      "is_cuban": false,
+      "owner_company": "My Father Cigars, Inc.",
+      "primary_country": "Nicaragua",
+      "primary_factory": "My Father Cigars S.A.",
+      "alt_names": []
+    },
+    {
+      "id": "faaa783d9b9a",
+      "name": "Nub",
+      "is_cuban": false,
+      "owner_company": "Oliva Cigar Co.",
+      "primary_country": "Nicaragua",
+      "primary_factory": "TABOLISA",
+      "alt_names": []
+    },
+    {
+      "id": "f2fa4d4f9cdf",
+      "name": "Oliva",
+      "is_cuban": false,
+      "owner_company": "Oliva Cigar Co.",
+      "primary_country": "Nicaragua",
+      "primary_factory": "TABOLISA",
+      "alt_names": []
+    },
+    {
+      "id": "aa0e0241fb1a",
+      "name": "Padron",
+      "is_cuban": false,
+      "owner_company": "Tabacos Padron",
+      "primary_country": "Nicaragua",
+      "primary_factory": "Tabacos Padron",
+      "alt_names": []
+    },
+    {
+      "id": "9b9c40b61d59",
+      "name": "Partagas (non-Cuban)",
+      "is_cuban": false,
+      "owner_company": "General Cigar (STG)",
+      "primary_country": "Dominican Republic",
+      "primary_factory": "General Cigar Dominicana",
+      "alt_names": []
+    },
+    {
+      "id": "414b85315dcc",
+      "name": "Partagás",
+      "is_cuban": true,
+      "owner_company": "Habanos S.A.",
+      "primary_country": "Cuba",
+      "primary_factory": "Partagás Factory (Francisco Perez Germán)",
+      "alt_names": []
+    },
+    {
+      "id": "58b7a5531c71",
+      "name": "Patina",
+      "is_cuban": false,
+      "owner_company": "Patina Cigars",
+      "primary_country": "Nicaragua",
+      "primary_factory": "NACSA",
+      "alt_names": []
+    },
+    {
+      "id": "8fc0dca5928e",
+      "name": "Perdomo",
+      "is_cuban": false,
+      "owner_company": "Perdomo Cigars",
+      "primary_country": "Nicaragua",
+      "primary_factory": "Tabacalera Perdomo",
+      "alt_names": []
+    },
+    {
+      "id": "eafe7ac4cea0",
+      "name": "Plasencia",
+      "is_cuban": false,
+      "owner_company": "Plasencia Cigars",
+      "primary_country": "Nicaragua",
+      "primary_factory": "Plasencia Cigars S.A.",
+      "alt_names": []
+    },
+    {
+      "id": "29335aa79b29",
+      "name": "Por Larrañaga",
+      "is_cuban": true,
+      "owner_company": "Habanos S.A.",
+      "primary_country": "Cuba",
+      "primary_factory": "La Corona",
+      "alt_names": []
+    },
+    {
+      "id": "090371bf35c5",
+      "name": "Punch",
+      "is_cuban": true,
+      "owner_company": "Habanos S.A.",
+      "primary_country": "Cuba",
+      "primary_factory": "La Corona",
+      "alt_names": []
+    },
+    {
+      "id": "f8a1db1e4e1a",
+      "name": "Punch (non-Cuban)",
+      "is_cuban": false,
+      "owner_company": "General Cigar (STG)",
+      "primary_country": "Honduras",
+      "primary_factory": "STG Danlí",
+      "alt_names": []
+    },
+    {
+      "id": "745f21722d6f",
+      "name": "Quai d'Orsay",
+      "is_cuban": true,
+      "owner_company": "Habanos S.A.",
+      "primary_country": "Cuba",
+      "primary_factory": "H. Upmann Factory",
+      "alt_names": []
+    },
+    {
+      "id": "dbfb3aed0ac1",
+      "name": "Quesada",
+      "is_cuban": false,
+      "owner_company": "Quesada Cigars",
+      "primary_country": "Dominican Republic",
+      "primary_factory": "Quesada",
+      "alt_names": []
+    },
+    {
+      "id": "2f7fd69d24cc",
+      "name": "Quintero",
+      "is_cuban": true,
+      "owner_company": "Habanos S.A.",
+      "primary_country": "Cuba",
+      "primary_factory": "La Corona",
+      "alt_names": []
+    },
+    {
+      "id": "a1df0646bd12",
+      "name": "Rafael González",
+      "is_cuban": true,
+      "owner_company": "Habanos S.A.",
+      "primary_country": "Cuba",
+      "primary_factory": "La Corona",
+      "alt_names": []
+    },
+    {
+      "id": "11b1891cc2c8",
+      "name": "Ramon Allones",
+      "is_cuban": true,
+      "owner_company": "Habanos S.A.",
+      "primary_country": "Cuba",
+      "primary_factory": "Partagás Factory (Francisco Perez Germán)",
+      "alt_names": []
+    },
+    {
+      "id": "9bae349e24fd",
+      "name": "Rocky Patel",
+      "is_cuban": false,
+      "owner_company": "Rocky Patel Premium Cigars",
+      "primary_country": "Honduras",
+      "primary_factory": "El Paraiso / STG Danlí",
+      "alt_names": []
+    },
+    {
+      "id": "89a5a7f8bbcd",
+      "name": "RoMa Craft Tobac",
+      "is_cuban": false,
+      "owner_company": "RoMa Craft Tobac",
+      "primary_country": "Nicaragua",
+      "primary_factory": "Nica Sueño",
+      "alt_names": []
+    },
+    {
+      "id": "6e29fcc1b440",
+      "name": "RoMa Craft Wunderlust",
+      "is_cuban": false,
+      "owner_company": "RoMa Craft Tobac",
+      "primary_country": "Nicaragua",
+      "primary_factory": "Nica Sueño",
+      "alt_names": []
+    },
+    {
+      "id": "496d9b2ce353",
+      "name": "Romeo y Julieta",
+      "is_cuban": true,
+      "owner_company": "Habanos S.A.",
+      "primary_country": "Cuba",
+      "primary_factory": "Briones Montoto (Romeo y Julieta)",
+      "alt_names": []
+    },
+    {
+      "id": "79116a25ab88",
+      "name": "Romeo y Julieta (non-Cuban)",
+      "is_cuban": false,
+      "owner_company": "Altadis U.S.A.",
+      "primary_country": "Dominican Republic",
+      "primary_factory": "Tabacalera de García",
+      "alt_names": []
+    },
+    {
+      "id": "069534fcfd85",
+      "name": "Room101",
+      "is_cuban": false,
+      "owner_company": "Room101 Cigars",
+      "primary_country": "Honduras/DR",
+      "primary_factory": "STG / others",
+      "alt_names": []
+    },
+    {
+      "id": "0449180bb834",
+      "name": "Saint Luis Rey",
+      "is_cuban": true,
+      "owner_company": "Habanos S.A.",
+      "primary_country": "Cuba",
+      "primary_factory": "La Corona",
+      "alt_names": []
+    },
+    {
+      "id": "797e0f6bd9ae",
+      "name": "San Cristóbal de La Habana",
+      "is_cuban": true,
+      "owner_company": "Habanos S.A.",
+      "primary_country": "Cuba",
+      "primary_factory": "La Corona",
+      "alt_names": []
+    },
+    {
+      "id": "d0b5c15588c3",
+      "name": "Sancho Panza",
+      "is_cuban": true,
+      "owner_company": "Habanos S.A.",
+      "primary_country": "Cuba",
+      "primary_factory": "La Corona",
+      "alt_names": []
+    },
+    {
+      "id": "799bf9a728ff",
+      "name": "Southern Draw",
+      "is_cuban": false,
+      "owner_company": "Southern Draw Cigars",
+      "primary_country": "Nicaragua",
+      "primary_factory": "AJ Fernandez / Tabacalera Villa Cuba",
+      "alt_names": []
+    },
+    {
+      "id": "3bcf4576e137",
+      "name": "Stolen Throne",
+      "is_cuban": false,
+      "owner_company": "Stolen Throne Cigars",
+      "primary_country": "Nicaragua",
+      "primary_factory": "Rojas",
+      "alt_names": []
+    },
+    {
+      "id": "0381968a583b",
+      "name": "Tatuaje",
+      "is_cuban": false,
+      "owner_company": "Tatuaje Cigars",
+      "primary_country": "Nicaragua",
+      "primary_factory": "My Father Cigars S.A.",
+      "alt_names": []
+    },
+    {
+      "id": "0d646b847145",
+      "name": "Trinidad",
+      "is_cuban": true,
+      "owner_company": "Habanos S.A.",
+      "primary_country": "Cuba",
+      "primary_factory": "El Laguito",
+      "alt_names": []
+    },
+    {
+      "id": "42ad11e19f97",
+      "name": "Trinidad (non-Cuban)",
+      "is_cuban": false,
+      "owner_company": "Altadis U.S.A.",
+      "primary_country": "Dominican Republic",
+      "primary_factory": "Tabacalera de García",
+      "alt_names": []
+    },
+    {
+      "id": "b83cbf4d6bbd",
+      "name": "Undercrown",
+      "is_cuban": false,
+      "owner_company": "Drew Estate",
+      "primary_country": "Nicaragua",
+      "primary_factory": "La Gran Fabrica Drew Estate",
+      "alt_names": []
+    },
+    {
+      "id": "9dbcc92f8e6e",
+      "name": "VegaFina",
+      "is_cuban": false,
+      "owner_company": "Tabacalera S.L.U. / Altadis",
+      "primary_country": "Dominican Republic",
+      "primary_factory": "Tabacalera de García",
+      "alt_names": []
+    },
+    {
+      "id": "0edf42e8214a",
+      "name": "Vegas Robaina",
+      "is_cuban": true,
+      "owner_company": "Habanos S.A.",
+      "primary_country": "Cuba",
+      "primary_factory": "H. Upmann Factory",
+      "alt_names": []
+    },
+    {
+      "id": "5333090a624d",
+      "name": "Vegueros",
+      "is_cuban": true,
+      "owner_company": "Habanos S.A.",
+      "primary_country": "Cuba",
+      "primary_factory": "Francisco Donatién (Pinar del Río)",
+      "alt_names": []
+    },
+    {
+      "id": "ae70840ec2ef",
+      "name": "Viaje",
+      "is_cuban": false,
+      "owner_company": "Viaje Cigars",
+      "primary_country": "Nicaragua",
+      "primary_factory": "Aganorsa / others",
+      "alt_names": []
+    },
+    {
+      "id": "3dba677a1ce1",
+      "name": "Villiger",
+      "is_cuban": false,
+      "owner_company": "Villiger",
+      "primary_country": "Nicaragua/DR",
+      "primary_factory": "Joya / ABAM",
+      "alt_names": []
+    },
+    {
+      "id": "586d28119eed",
+      "name": "Warped",
+      "is_cuban": false,
+      "owner_company": "Warped Cigars",
+      "primary_country": "Nicaragua",
+      "primary_factory": "Aganorsa Leaf / TABSA",
+      "alt_names": []
+    }
+  ],
+  "vocabularies": {
+    "countries": [
+      "Cuba",
+      "Dominican Republic",
+      "Nicaragua",
+      "Honduras",
+      "USA",
+      "Mexico",
+      "Ecuador",
+      "Brazil",
+      "Costa Rica",
+      "Philippines",
+      "Germany",
+      "Switzerland"
+    ],
+    "vitolas": [
+      "petite corona",
+      "corona",
+      "corona gorda",
+      "lonsdale",
+      "panatela",
+      "robusto",
+      "toro",
+      "churchill",
+      "lancero",
+      "belicoso",
+      "torpedo",
+      "pyramid",
+      "perfecto",
+      "figurado",
+      "gordo"
+    ],
+    "wrappers_varietals": [
+      "Connecticut Shade",
+      "Connecticut Broadleaf",
+      "Habano",
+      "Corojo",
+      "Criollo 98",
+      "Criollo 99",
+      "San Andrés (Mexico)",
+      "Sumatra",
+      "Cameroon",
+      "Ecuadorian Connecticut",
+      "Ecuadorian Habano",
+      "PA Broadleaf"
+    ],
+    "factories": [
+      {
+        "name": "El Laguito",
+        "country": "Cuba"
+      },
+      {
+        "name": "Briones Montoto (Romeo y Julieta)",
+        "country": "Cuba"
+      },
+      {
+        "name": "Partagás Factory (Francisco Perez Germán)",
+        "country": "Cuba"
+      },
+      {
+        "name": "La Corona",
+        "country": "Cuba"
+      },
+      {
+        "name": "H. Upmann Factory",
+        "country": "Cuba"
+      },
+      {
+        "name": "Tabacalera de García",
+        "country": "Dominican Republic"
+      },
+      {
+        "name": "Tabacalera A. Fuente y Cia",
+        "country": "Dominican Republic"
+      },
+      {
+        "name": "La Aurora",
+        "country": "Dominican Republic"
+      },
+      {
+        "name": "Tabacalera La Alianza (E.P. Carrillo)",
+        "country": "Dominican Republic"
+      },
+      {
+        "name": "General Cigar Dominicana",
+        "country": "Dominican Republic"
+      },
+      {
+        "name": "Fábrica de Tabacos Joya de Nicaragua",
+        "country": "Nicaragua"
+      },
+      {
+        "name": "My Father Cigars S.A.",
+        "country": "Nicaragua"
+      },
+      {
+        "name": "A.J. Fernandez (San Lotano)",
+        "country": "Nicaragua"
+      },
+      {
+        "name": "TABSA / AGANORSA Leaf",
+        "country": "Nicaragua"
+      },
+      {
+        "name": "Drew Estate (La Gran Fabrica)",
+        "country": "Nicaragua"
+      },
+      {
+        "name": "Plasencia Cigars S.A.",
+        "country": "Nicaragua"
+      },
+      {
+        "name": "STG Danlí",
+        "country": "Honduras"
+      },
+      {
+        "name": "CLE / Aladino (Eiroa)",
+        "country": "Honduras"
+      }
+    ]
+  }
+}

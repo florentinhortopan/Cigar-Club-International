@@ -1,0 +1,170 @@
+// Prisma schema for NextAuth + App Data
+// Using SQLite for everything now
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./auth.db"
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+// NextAuth.js Models
+// https://next-auth.js.org/adapters/prisma
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model User {
+  id            String    @id @default(cuid())
+  name          String?
+  email         String?   @unique
+  emailVerified DateTime?
+  image         String?
+  accounts      Account[]
+  sessions      Session[]
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+// =============================================================================
+// APP DATA MODELS
+// =============================================================================
+
+model Brand {
+  id          String   @id @default(cuid())
+  name        String   @unique
+  slug        String   @unique
+  country     String?
+  founded     Int?
+  description String?
+  website     String?
+  logo_url    String?
+  created_at  DateTime @default(now())
+  updated_at  DateTime @updatedAt
+
+  lines Line[]
+
+  @@index([name])
+  @@index([slug])
+}
+
+model Line {
+  id            String    @id @default(cuid())
+  name          String
+  slug          String
+  brand_id      String
+  description   String?
+  release_year  Int?
+  discontinued  Boolean   @default(false)
+  created_at    DateTime  @default(now())
+  updated_at    DateTime  @updatedAt
+
+  brand  Brand   @relation(fields: [brand_id], references: [id], onDelete: Cascade)
+  cigars Cigar[]
+
+  @@unique([brand_id, slug])
+  @@index([brand_id])
+}
+
+model Cigar {
+  id                String    @id @default(cuid())
+  line_id           String
+  vitola            String
+  ring_gauge        Int?
+  length_mm         Int?
+  length_inches     Float?
+  wrapper           String?
+  binder            String?
+  filler            String?
+  filler_tobaccos    String?   // JSON array as string
+  image_urls        String?   // JSON array of image URLs: ["/uploads/abc.jpg", ...]
+  strength          String?   // Mild | Medium-Mild | Medium | Medium-Full | Full
+  body              String?   // Light | Medium-Light | Medium | Medium-Full | Full
+  msrp_cents        Int?
+  typical_street_cents Int?
+  country           String?
+  factory           String?
+  avg_rating        Float?
+  total_ratings     Int       @default(0)
+  created_at        DateTime  @default(now())
+  updated_at        DateTime  @updatedAt
+
+  line     Line      @relation(fields: [line_id], references: [id], onDelete: Cascade)
+  releases Release[]
+
+  @@index([line_id])
+}
+
+model Release {
+  id            String   @id @default(cuid())
+  cigar_id      String
+  year          Int
+  batch         String?  @default("Regular Production")
+  limited       Boolean  @default(false)
+  available     Boolean  @default(true)
+  notes         String?
+  created_at    DateTime @default(now())
+  updated_at    DateTime @updatedAt
+
+  cigar Cigar @relation(fields: [cigar_id], references: [id], onDelete: Cascade)
+
+  @@index([cigar_id])
+  @@index([year])
+}
+
+// =============================================================================
+// USER HUMIDOR (Personal Collection)
+// =============================================================================
+
+model HumidorItem {
+  id              String   @id @default(cuid())
+  user_id         String
+  cigar_id        String
+  quantity        Int      @default(1)
+  purchase_price_cents Int?
+  purchase_date   DateTime?
+  location        String?  // e.g., "Main Humidor", "Travel Case"
+  condition       String?  // e.g., "Perfect", "Minor Damage"
+  notes           String?
+  acquired_from   String?  // e.g., "Retail", "Trade", "Gift"
+  created_at      DateTime @default(now())
+  updated_at      DateTime @updatedAt
+
+  // Relations (using User email as identifier since we have NextAuth User)
+  // Note: We'll link via user email from NextAuth session
+
+  @@index([user_id])
+  @@index([cigar_id])
+}

@@ -1,0 +1,383 @@
+-- Simple seed data for Humidor Club
+-- Load with: surreal sql --conn http://localhost:8000 --user root --pass root --ns humidor_club --db production < seed-simple.sql
+
+-- First, clear existing data
+DELETE brand;
+DELETE line;
+DELETE cigar;
+DELETE release;
+
+-- ================================================================================
+-- BRANDS
+-- ================================================================================
+
+CREATE brand:arturo_fuente SET
+  name = "Arturo Fuente",
+  slug = "arturo-fuente",
+  country = "Dominican Republic",
+  founded = 1912,
+  description = "One of the most prestigious cigar manufacturers, known for premium quality and the legendary Opus X line.",
+  website = "https://www.arturofuente.com";
+
+CREATE brand:padron SET
+  name = "Padron",
+  slug = "padron",
+  country = "Nicaragua",
+  founded = 1964,
+  description = "Family-owned manufacturer producing some of the highest-rated cigars in the world.",
+  website = "https://www.padron.com";
+
+CREATE brand:drew_estate SET
+  name = "Drew Estate",
+  slug = "drew-estate",
+  country = "Nicaragua",
+  founded = 1996,
+  description = "Innovative manufacturer known for Liga Privada, Undercrown, and infused Acid cigars.",
+  website = "https://drewestate.com";
+
+CREATE brand:ashton SET
+  name = "Ashton",
+  slug = "ashton",
+  country = "Dominican Republic",
+  founded = 1985,
+  description = "Premium cigar brand known for consistent quality and the highly-rated VSG and ESG lines.",
+  website = "https://www.ashtoncigars.com";
+
+CREATE brand:oliva SET
+  name = "Oliva",
+  slug = "oliva",
+  country = "Nicaragua",
+  founded = 1995,
+  description = "Premium Nicaraguan cigars known for Serie V and Serie O lines.",
+  website = "https://olivacigar.com";
+
+CREATE brand:alec_bradley SET
+  name = "Alec Bradley",
+  slug = "alec-bradley",
+  country = "Honduras",
+  founded = 1996,
+  description = "Boutique brand creating award-winning blends like Prensado and Black Market.",
+  website = "https://alecbradley.com";
+
+CREATE brand:romeo_y_julieta SET
+  name = "Romeo y Julieta",
+  slug = "romeo-y-julieta",
+  country = "Dominican Republic",
+  founded = 1875,
+  description = "Historic Cuban brand now producing premium cigars in Dominican Republic.",
+  website = "https://www.romeoyjulieta.com";
+
+-- ================================================================================
+-- PRODUCT LINES
+-- ================================================================================
+
+CREATE line:fuente_hemingway SET
+  name = "Hemingway",
+  slug = "hemingway",
+  brand = brand:arturo_fuente,
+  description = "Perfecto-shaped cigars with a sweet Cameroon wrapper, named after Ernest Hemingway.";
+
+CREATE line:fuente_opusx SET
+  name = "Opus X",
+  slug = "opus-x",
+  brand = brand:arturo_fuente,
+  description = "Ultra-premium line with rare Dominican wrapper, considered one of the world's finest cigars.";
+
+CREATE line:liga_privada SET
+  name = "Liga Privada",
+  slug = "liga-privada",
+  brand = brand:drew_estate,
+  description = "Ultra-premium line originally made for Drew Estate's personal use.";
+
+CREATE line:undercrown SET
+  name = "Undercrown",
+  slug = "undercrown",
+  brand = brand:drew_estate,
+  description = "Created by factory rollers as an alternative to Liga Privada.";
+
+CREATE line:padron_1964 SET
+  name = "1964 Anniversary Series",
+  slug = "1964",
+  brand = brand:padron,
+  description = "Premium line celebrating the founding year, box-pressed with 4 years aging.";
+
+CREATE line:ashton_vsg SET
+  name = "Virgin Sun Grown (VSG)",
+  slug = "vsg",
+  brand = brand:ashton,
+  description = "Full-bodied line with Ecuadorian sun-grown wrapper, highly rated.";
+
+CREATE line:oliva_v SET
+  name = "Serie V",
+  slug = "serie-v",
+  brand = brand:oliva,
+  description = "Full-bodied flagship line, highly rated and award-winning.";
+
+CREATE line:prensado SET
+  name = "Prensado",
+  slug = "prensado",
+  brand = brand:alec_bradley,
+  description = "Box-pressed cigars with Honduran Corojo wrapper, Cigar of the Year 2011.";
+
+CREATE line:reserva_real SET
+  name = "Reserva Real",
+  slug = "reserva-real",
+  brand = brand:romeo_y_julieta,
+  description = "Smooth, medium-bodied cigars with Ecuadorian Connecticut wrapper.";
+
+-- ================================================================================
+-- CIGARS (Vitolas)
+-- ================================================================================
+
+CREATE cigar:hemingway_short_story SET
+  line = line:fuente_hemingway,
+  vitola = "Perfecto",
+  ring_gauge = 49,
+  length_inches = 4.0,
+  length_mm = 102,
+  wrapper = "African Cameroon",
+  binder = "Dominican",
+  filler = "Dominican",
+  filler_tobaccos = ["Dominican"],
+  strength = "Medium",
+  body = "Medium",
+  msrp_cents = 779,
+  typical_street_cents = 779,
+  country = "Dominican Republic";
+
+CREATE cigar:hemingway_classic SET
+  line = line:fuente_hemingway,
+  vitola = "Perfecto",
+  ring_gauge = 48,
+  length_inches = 7.0,
+  length_mm = 178,
+  wrapper = "African Cameroon",
+  binder = "Dominican",
+  filler = "Dominican",
+  filler_tobaccos = ["Dominican"],
+  strength = "Medium",
+  body = "Medium",
+  msrp_cents = 1450,
+  typical_street_cents = 1305,
+  country = "Dominican Republic";
+
+CREATE cigar:opusx_perfecxion SET
+  line = line:fuente_opusx,
+  vitola = "Toro",
+  ring_gauge = 48,
+  length_inches = 6.25,
+  length_mm = 159,
+  wrapper = "Dominican",
+  binder = "Dominican",
+  filler = "Dominican",
+  filler_tobaccos = ["Dominican"],
+  strength = "Full",
+  body = "Full",
+  msrp_cents = 3834,
+  typical_street_cents = 3834,
+  country = "Dominican Republic";
+
+CREATE cigar:liga_no9_toro SET
+  line = line:liga_privada,
+  vitola = "Toro",
+  ring_gauge = 52,
+  length_inches = 6.0,
+  length_mm = 152,
+  wrapper = "Connecticut Broadleaf",
+  binder = "Brazilian Mata Fina",
+  filler = "Nicaraguan, Honduran",
+  filler_tobaccos = ["Nicaraguan", "Honduran"],
+  strength = "Full",
+  body = "Full",
+  msrp_cents = 1495,
+  typical_street_cents = 1345,
+  country = "Nicaragua";
+
+CREATE cigar:undercrown_flying_pig SET
+  line = line:undercrown,
+  vitola = "Perfecto",
+  ring_gauge = 60,
+  length_inches = 4.0,
+  length_mm = 102,
+  wrapper = "Brazilian Mata Fina",
+  binder = "Connecticut Habano",
+  filler = "Nicaraguan",
+  filler_tobaccos = ["Nicaraguan"],
+  strength = "Full",
+  body = "Full",
+  msrp_cents = 1595,
+  typical_street_cents = 1308,
+  country = "Nicaragua";
+
+CREATE cigar:padron_1964_principe SET
+  line = line:padron_1964,
+  vitola = "Robusto",
+  ring_gauge = 46,
+  length_inches = 4.5,
+  length_mm = 114,
+  wrapper = "Nicaraguan",
+  binder = "Nicaraguan",
+  filler = "Nicaraguan",
+  filler_tobaccos = ["Nicaraguan"],
+  strength = "Full",
+  body = "Full",
+  msrp_cents = 1350,
+  typical_street_cents = 1215,
+  country = "Nicaragua";
+
+CREATE cigar:vsg_robusto SET
+  line = line:ashton_vsg,
+  vitola = "Robusto",
+  ring_gauge = 50,
+  length_inches = 5.0,
+  length_mm = 127,
+  wrapper = "Ecuadorian Sun Grown",
+  binder = "Dominican",
+  filler = "Dominican, Nicaraguan",
+  filler_tobaccos = ["Dominican", "Nicaraguan"],
+  strength = "Full",
+  body = "Full",
+  msrp_cents = 1095,
+  typical_street_cents = 985,
+  country = "Dominican Republic";
+
+CREATE cigar:oliva_v_melanio SET
+  line = line:oliva_v,
+  vitola = "Figurado",
+  ring_gauge = 52,
+  length_inches = 6.5,
+  length_mm = 165,
+  wrapper = "Ecuadorian Sumatra",
+  binder = "Nicaraguan",
+  filler = "Nicaraguan",
+  filler_tobaccos = ["Nicaraguan"],
+  strength = "Full",
+  body = "Full",
+  msrp_cents = 1195,
+  typical_street_cents = 1075,
+  country = "Nicaragua";
+
+CREATE cigar:prensado_churchill SET
+  line = line:prensado,
+  vitola = "Churchill",
+  ring_gauge = 50,
+  length_inches = 7.0,
+  length_mm = 178,
+  wrapper = "Honduran Corojo",
+  binder = "Nicaraguan",
+  filler = "Honduran, Nicaraguan",
+  filler_tobaccos = ["Honduran", "Nicaraguan"],
+  strength = "Medium-Full",
+  body = "Medium-Full",
+  msrp_cents = 995,
+  typical_street_cents = 895,
+  country = "Honduras";
+
+CREATE cigar:reserva_robusto SET
+  line = line:reserva_real,
+  vitola = "Robusto",
+  ring_gauge = 52,
+  length_inches = 5.0,
+  length_mm = 127,
+  wrapper = "Ecuadorian Connecticut",
+  binder = "Nicaraguan",
+  filler = "Dominican, Nicaraguan",
+  filler_tobaccos = ["Dominican", "Nicaraguan"],
+  strength = "Medium",
+  body = "Medium",
+  msrp_cents = 945,
+  typical_street_cents = 916,
+  country = "Dominican Republic";
+
+-- ================================================================================
+-- RELEASES
+-- ================================================================================
+
+CREATE release:hemingway_short_story_2024 SET
+  cigar = cigar:hemingway_short_story,
+  year = 2024,
+  batch = "Regular Production",
+  limited = false,
+  available = true,
+  notes = "Current production, widely available";
+
+CREATE release:hemingway_classic_2024 SET
+  cigar = cigar:hemingway_classic,
+  year = 2024,
+  batch = "Regular Production",
+  limited = false,
+  available = true,
+  notes = "Signature Hemingway perfecto";
+
+CREATE release:opusx_perfecxion_2024 SET
+  cigar = cigar:opusx_perfecxion,
+  year = 2024,
+  batch = "Angels Share",
+  limited = true,
+  available = true,
+  notes = "Limited availability - 5 singles max per customer";
+
+CREATE release:liga_no9_2024 SET
+  cigar = cigar:liga_no9_toro,
+  year = 2024,
+  batch = "Regular Production",
+  limited = false,
+  available = true,
+  notes = "Highly sought after, may have limited availability";
+
+CREATE release:undercrown_flying_pig_2024 SET
+  cigar = cigar:undercrown_flying_pig,
+  year = 2024,
+  batch = "Regular Production",
+  limited = false,
+  available = true,
+  notes = "Box of 12 available";
+
+CREATE release:padron_1964_principe_2024 SET
+  cigar = cigar:padron_1964_principe,
+  year = 2024,
+  batch = "Regular Production",
+  limited = false,
+  available = true,
+  notes = "Box-pressed with 4 years aging";
+
+CREATE release:vsg_robusto_2024 SET
+  cigar = cigar:vsg_robusto,
+  year = 2024,
+  batch = "Regular Production",
+  limited = false,
+  available = true,
+  notes = "Consistently high ratings";
+
+CREATE release:oliva_v_melanio_2024 SET
+  cigar = cigar:oliva_v_melanio,
+  year = 2024,
+  batch = "Regular Production",
+  limited = false,
+  available = true,
+  notes = "Cigar of the Year 2014";
+
+CREATE release:prensado_churchill_2024 SET
+  cigar = cigar:prensado_churchill,
+  year = 2024,
+  batch = "Regular Production",
+  limited = false,
+  available = true,
+  notes = "Cigar of the Year 2011";
+
+CREATE release:reserva_robusto_2024 SET
+  cigar = cigar:reserva_robusto,
+  year = 2024,
+  batch = "Regular Production",
+  limited = false,
+  available = true,
+  notes = "Box of 25 available";
+
+-- Display summary
+SELECT VALUE {
+  brands: (SELECT count() FROM brand GROUP ALL)[0].count,
+  lines: (SELECT count() FROM line GROUP ALL)[0].count,
+  cigars: (SELECT count() FROM cigar GROUP ALL)[0].count,
+  releases: (SELECT count() FROM release GROUP ALL)[0].count
+};
+

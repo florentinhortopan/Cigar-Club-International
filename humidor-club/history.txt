@@ -1,0 +1,4 @@
+#V2
+SELECT id, name, country FROM brand ORDER BY name LIMIT 5;
+INFO FOR NS;
+SELECT * FROM brand LIMIT 1;
