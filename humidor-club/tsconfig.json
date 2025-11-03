@@ -37,6 +37,11 @@
     ".next/dev/types/**/*.ts"
   ],
   "exclude": [
-    "node_modules"
+    "node_modules",
+    "lib/surrealdb.ts",
+    "lib/surrealdb-simple.ts",
+    "lib/surrealdb-queries.ts",
+    "lib/surrealdb-http.ts",
+    "tests"
   ]
 }

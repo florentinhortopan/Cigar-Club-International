@@ -49,9 +49,6 @@ export async function getHumidorItems(userId: string): Promise<HumidorItemWithCi
   try {
     return await prisma.humidorItem.findMany({
       where: { user_id: userId },
-      include: {
-        // Note: Prisma doesn't support direct relations here, so we'll fetch separately
-      },
       orderBy: { created_at: 'desc' },
     }) as any;
   } catch (error) {

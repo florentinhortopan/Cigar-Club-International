@@ -4,7 +4,7 @@ import { PrismaAdapter } from '@auth/prisma-adapter';
 import { prisma } from '@/lib/prisma';
 import { Resend } from 'resend';
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null;
 
 export const authOptions: NextAuthOptions = {
   adapter: PrismaAdapter(prisma) as any,
@@ -42,11 +42,15 @@ export const authOptions: NextAuthOptions = {
           // NextAuth will handle the callback when the link is clicked
         },
       }),
-      ...(process.env.NODE_ENV === 'production' && {
-        sendVerificationRequest: async ({ identifier: email, url }) => {
-          // In production, send actual email via Resend
-          try {
-            await resend.emails.send({
+              ...(process.env.NODE_ENV === 'production' && resend && {
+                sendVerificationRequest: async ({ identifier: email, url }) => {
+                  // In production, send actual email via Resend
+                  if (!resend) {
+                    console.error('RESEND_API_KEY not configured');
+                    return;
+                  }
+                  try {
+                    await resend.emails.send({
               from: process.env.EMAIL_FROM || 'noreply@humidor.club',
               to: email,
               subject: 'Sign in to Humidor Club',

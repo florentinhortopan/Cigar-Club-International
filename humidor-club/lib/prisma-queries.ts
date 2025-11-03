@@ -88,7 +88,7 @@ export async function getAllLines(): Promise<Line[]> {
 // =============================================================================
 
 export interface Cigar {
-  id?: string;
+  id: string;
   line_id: string;
   vitola: string;
   ring_gauge?: number | null;
@@ -97,7 +97,8 @@ export interface Cigar {
   wrapper?: string | null;
   binder?: string | null;
   filler?: string | null;
-  filler_tobaccos?: string[] | null;
+  filler_tobaccos?: string | null; // JSON string in database
+  image_urls?: string | null; // JSON string in database
   strength?: string | null;
   body?: string | null;
   msrp_cents?: number | null;
@@ -167,7 +168,7 @@ export async function getCigarById(id: string): Promise<Cigar | null> {
   try {
     return await prisma.cigar.findUnique({
       where: { id },
-    });
+    }) as Cigar | null;
   } catch (error) {
     console.error('Error fetching cigar:', error);
     return null;

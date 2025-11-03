@@ -1,0 +1,9 @@
+{
+  "buildCommand": "cd humidor-club && pnpm install && pnpm build",
+  "outputDirectory": "humidor-club/.next",
+  "installCommand": "cd humidor-club && pnpm install",
+  "framework": "nextjs",
+  "devCommand": "cd humidor-club && pnpm dev",
+  "ignoreCommand": "git diff --quiet HEAD^ HEAD ./humidor-club"
+}
+

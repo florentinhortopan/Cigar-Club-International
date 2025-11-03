@@ -1,9 +1,10 @@
 // Prisma schema for NextAuth + App Data
-// Using SQLite for everything now
+// Using PostgreSQL for production (Supabase)
+// SQLite can still be used locally by changing DATABASE_URL
 
 datasource db {
-  provider = "sqlite"
-  url      = "file:./auth.db"
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
 }
 
 generator client {
@@ -81,15 +82,15 @@ model Brand {
 }
 
 model Line {
-  id            String    @id @default(cuid())
-  name          String
-  slug          String
-  brand_id      String
-  description   String?
-  release_year  Int?
-  discontinued  Boolean   @default(false)
-  created_at    DateTime  @default(now())
-  updated_at    DateTime  @updatedAt
+  id           String   @id @default(cuid())
+  name         String
+  slug         String
+  brand_id     String
+  description  String?
+  release_year Int?
+  discontinued Boolean  @default(false)
+  created_at   DateTime @default(now())
+  updated_at   DateTime @updatedAt
 
   brand  Brand   @relation(fields: [brand_id], references: [id], onDelete: Cascade)
   cigars Cigar[]
@@ -99,27 +100,27 @@ model Line {
 }
 
 model Cigar {
-  id                String    @id @default(cuid())
-  line_id           String
-  vitola            String
-  ring_gauge        Int?
-  length_mm         Int?
-  length_inches     Float?
-  wrapper           String?
-  binder            String?
-  filler            String?
-  filler_tobaccos    String?   // JSON array as string
-  image_urls        String?   // JSON array of image URLs: ["/uploads/abc.jpg", ...]
-  strength          String?   // Mild | Medium-Mild | Medium | Medium-Full | Full
-  body              String?   // Light | Medium-Light | Medium | Medium-Full | Full
-  msrp_cents        Int?
+  id                   String   @id @default(cuid())
+  line_id              String
+  vitola               String
+  ring_gauge           Int?
+  length_mm            Int?
+  length_inches        Float?
+  wrapper              String?
+  binder               String?
+  filler               String?
+  filler_tobaccos      String? // JSON array as string
+  image_urls           String? // JSON array of image URLs: ["/uploads/abc.jpg", ...]
+  strength             String? // Mild | Medium-Mild | Medium | Medium-Full | Full
+  body                 String? // Light | Medium-Light | Medium | Medium-Full | Full
+  msrp_cents           Int?
   typical_street_cents Int?
-  country           String?
-  factory           String?
-  avg_rating        Float?
-  total_ratings     Int       @default(0)
-  created_at        DateTime  @default(now())
-  updated_at        DateTime  @updatedAt
+  country              String?
+  factory              String?
+  avg_rating           Float?
+  total_ratings        Int      @default(0)
+  created_at           DateTime @default(now())
+  updated_at           DateTime @updatedAt
 
   line     Line      @relation(fields: [line_id], references: [id], onDelete: Cascade)
   releases Release[]
@@ -128,15 +129,15 @@ model Cigar {
 }
 
 model Release {
-  id            String   @id @default(cuid())
-  cigar_id      String
-  year          Int
-  batch         String?  @default("Regular Production")
-  limited       Boolean  @default(false)
-  available     Boolean  @default(true)
-  notes         String?
-  created_at    DateTime @default(now())
-  updated_at    DateTime @updatedAt
+  id         String   @id @default(cuid())
+  cigar_id   String
+  year       Int
+  batch      String?  @default("Regular Production")
+  limited    Boolean  @default(false)
+  available  Boolean  @default(true)
+  notes      String?
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
 
   cigar Cigar @relation(fields: [cigar_id], references: [id], onDelete: Cascade)
 
@@ -149,18 +150,18 @@ model Release {
 // =============================================================================
 
 model HumidorItem {
-  id              String   @id @default(cuid())
-  user_id         String
-  cigar_id        String
-  quantity        Int      @default(1)
+  id                   String    @id @default(cuid())
+  user_id              String
+  cigar_id             String
+  quantity             Int       @default(1)
   purchase_price_cents Int?
-  purchase_date   DateTime?
-  location        String?  // e.g., "Main Humidor", "Travel Case"
-  condition       String?  // e.g., "Perfect", "Minor Damage"
-  notes           String?
-  acquired_from   String?  // e.g., "Retail", "Trade", "Gift"
-  created_at      DateTime @default(now())
-  updated_at      DateTime @updatedAt
+  purchase_date        DateTime?
+  location             String? // e.g., "Main Humidor", "Travel Case"
+  condition            String? // e.g., "Perfect", "Minor Damage"
+  notes                String?
+  acquired_from        String? // e.g., "Retail", "Trade", "Gift"
+  created_at           DateTime  @default(now())
+  updated_at           DateTime  @updatedAt
 
   // Relations (using User email as identifier since we have NextAuth User)
   // Note: We'll link via user email from NextAuth session

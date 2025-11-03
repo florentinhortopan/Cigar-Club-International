@@ -5,10 +5,11 @@ import { authOptions } from '@/app/api/auth/[...nextauth]/route';
 
 export async function GET(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const cigar = await getCigarById(params.id);
+    const { id } = await params;
+    const cigar = await getCigarById(id);
     
     if (!cigar) {
       return NextResponse.json(
@@ -20,7 +21,7 @@ export async function GET(
     // Include line and brand relations
     const { prisma } = await import('@/lib/prisma');
     const cigarWithRelations = await prisma.cigar.findUnique({
-      where: { id: params.id },
+      where: { id },
       include: {
         line: {
           include: {
@@ -45,9 +46,11 @@ export async function GET(
 
 export async function PATCH(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
+    
     // Check authentication
     const session = await getServerSession(authOptions);
     if (!session) {
@@ -77,8 +80,8 @@ export async function PATCH(
     if (body.country !== undefined) updateInput.country = body.country;
     if (body.factory !== undefined) updateInput.factory = body.factory;
     
-    console.log('📝 Updating cigar:', params.id, 'with:', updateInput);
-    const updatedCigar = await updateCigar(params.id, updateInput);
+    console.log('📝 Updating cigar:', id, 'with:', updateInput);
+    const updatedCigar = await updateCigar(id, updateInput);
     console.log('✅ Cigar updated:', updatedCigar);
     
     return NextResponse.json({

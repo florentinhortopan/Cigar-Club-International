@@ -53,26 +53,27 @@ class SurrealDBClient {
   static async query<T = any>(sql: string, vars?: Record<string, any>): Promise<T[]> {
     const db = await this.getInstance();
     // Ensure namespace/database are set before query
-    await db.use(
-      process.env.SURREALDB_NAMESPACE || 'humidor_club',
-      process.env.SURREALDB_DATABASE || 'production'
-    );
+    await db.use({
+      namespace: process.env.SURREALDB_NAMESPACE || 'humidor_club',
+      database: process.env.SURREALDB_DATABASE || 'production',
+    });
     const result = await db.query<T[][]>(sql, vars);
     return result[0] || [];
   }
 
-  static async select<T = any>(table: string): Promise<T[]> {
+  static async select<T extends Record<string, any> = any>(table: string): Promise<T[]> {
     const db = await this.getInstance();
-    return await db.select<T>(table);
+    const result = await db.select<T>(table);
+    return Array.isArray(result) ? result : [result];
   }
 
-  static async create<T = any>(table: string, data: Partial<T>): Promise<T> {
+  static async create<T extends Record<string, any> = any>(table: string, data: Partial<T>): Promise<T> {
     const db = await this.getInstance();
     const result = await db.create<T>(table, data);
     return Array.isArray(result) ? result[0] : result;
   }
 
-  static async update<T = any>(thing: string, data: Partial<T>): Promise<T> {
+  static async update<T extends Record<string, any> = any>(thing: string, data: Partial<T>): Promise<T> {
     const db = await this.getInstance();
     return await db.update<T>(thing, data);
   }

@@ -1,0 +1,8 @@
+#V2
+-- Quick test: Create one brand manually
+CREATE brand SET  name = "Arturo Fuente",  slug = "arturo-fuente",  country = "Dominican Republic",  founded = 1912,  description = "One of the most prestigious cigar manufacturers.",  website = "https://www.arturofuente.com";
+SELECT * FROM brand;
+-- Count all records
+SELECT * FROM brand;
+SELECT id, vitola, ring_gauge, length_inches, msrp_cents, line FROM cigar LIMIT 5;
+SELECT * FROM brand LIMIT 1;

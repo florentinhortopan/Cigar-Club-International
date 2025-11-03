@@ -10,17 +10,6 @@ export async function GET(request: Request) {
     
     const cigars = await getCigars(limit);
     
-    // Log the first cigar to debug relations
-    if (cigars.length > 0) {
-      console.log('📦 Sample cigar data:', JSON.stringify({
-        id: cigars[0].id,
-        vitola: cigars[0].vitola,
-        line: cigars[0].line,
-        hasLine: !!cigars[0].line,
-        hasBrand: !!(cigars[0] as any).line?.brand,
-      }, null, 2));
-    }
-    
     return NextResponse.json({
       success: true,
       cigars,
@@ -33,6 +22,9 @@ export async function GET(request: Request) {
     );
   }
 }
+
+// Force dynamic rendering
+export const dynamic = 'force-dynamic';
 
 export async function POST(request: Request) {
   try {
@@ -100,19 +92,21 @@ export async function POST(request: Request) {
     console.log('✅ Cigar created:', cigar.id);
     
     // Automatically add to user's humidor
-    try {
-      const { addToHumidor } = await import('@/lib/humidor-queries');
-      console.log('🔄 Adding cigar to humidor for user:', session.user.id, 'cigar:', cigar.id);
-      const humidorItem = await addToHumidor({
-        userId: session.user.id,
-        cigarId: cigar.id,
-        quantity: 1,
-      });
-      console.log('✅ Added to humidor:', humidorItem);
-    } catch (humidError: any) {
-      console.error('⚠️ Failed to add to humidor (cigar still created):', humidError);
-      console.error('⚠️ Error details:', humidError.message, humidError.stack);
-      // Don't fail the whole request if humidor add fails
+    if (cigar.id) {
+      try {
+        const { addToHumidor } = await import('@/lib/humidor-queries');
+        console.log('🔄 Adding cigar to humidor for user:', session.user.id, 'cigar:', cigar.id);
+        const humidorItem = await addToHumidor({
+          userId: session.user.id,
+          cigarId: cigar.id,
+          quantity: 1,
+        });
+        console.log('✅ Added to humidor:', humidorItem);
+      } catch (humidError: any) {
+        console.error('⚠️ Failed to add to humidor (cigar still created):', humidError);
+        console.error('⚠️ Error details:', humidError.message, humidError.stack);
+        // Don't fail the whole request if humidor add fails
+      }
     }
     
     return NextResponse.json({
