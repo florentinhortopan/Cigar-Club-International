@@ -190,12 +190,25 @@ export const authOptions: NextAuthOptions = {
     async session({ session, token, user }) {
       console.log('📝 Session callback:', { 
         session: session ? { user: session.user?.email } : null, 
-        token: token ? { sub: token.sub } : null, 
+        token: token ? { sub: token.sub, id: token.id, email: token.email } : null, 
         user: user ? { id: user.id } : null 
       });
-      if (session?.user && token?.sub) {
-        session.user.id = token.sub as string;
+      if (session?.user) {
+        if (token?.sub) {
+          session.user.id = token.sub as string;
+        }
+        if (token?.id) {
+          session.user.id = token.id as string;
+        }
+        if (token?.email) {
+          session.user.email = token.email as string;
+        }
       }
+      console.log('📝 Session callback result:', { 
+        hasSession: !!session, 
+        userId: session?.user?.id, 
+        userEmail: session?.user?.email 
+      });
       return session;
     },
     async jwt({ token, user, account, profile, trigger }) {
@@ -225,9 +238,11 @@ export const authOptions: NextAuthOptions = {
         sameSite: 'lax',
         path: '/',
         secure: process.env.NODE_ENV === 'production',
+        domain: process.env.NODE_ENV === 'production' ? undefined : undefined, // Use default domain
       },
     },
   },
+  useSecureCookies: process.env.NODE_ENV === 'production',
   secret: process.env.NEXTAUTH_SECRET,
 };
 
