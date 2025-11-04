@@ -2,10 +2,10 @@
 
 import { Mail, CheckCircle, ExternalLink, Clock } from 'lucide-react';
 import Link from 'next/link';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 
-export default function VerifyRequestPage() {
+function VerifyRequestContent() {
   const searchParams = useSearchParams();
   const email = searchParams.get('email');
   const [magicLink, setMagicLink] = useState<string | null>(null);
@@ -173,6 +173,21 @@ export default function VerifyRequestPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function VerifyRequestPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+          <p className="text-muted-foreground">Loading...</p>
+        </div>
+      </div>
+    }>
+      <VerifyRequestContent />
+    </Suspense>
   );
 }
 
