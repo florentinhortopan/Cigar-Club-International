@@ -6,7 +6,12 @@ import { authOptions } from '@/app/api/auth/[...nextauth]/route';
  * Use this in Server Components and API routes
  */
 export async function getSession() {
-  return await getServerSession(authOptions);
+  try {
+    return await getServerSession(authOptions);
+  } catch (error) {
+    console.error('❌ Error getting session:', error);
+    return null;
+  }
 }
 
 /**

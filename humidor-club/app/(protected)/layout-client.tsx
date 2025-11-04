@@ -11,12 +11,19 @@ interface NavItem {
   icon: typeof Home;
 }
 
+const navItems: NavItem[] = [
+  { href: '/dashboard', label: 'Home', icon: Home },
+  { href: '/cigars', label: 'Cigars', icon: Search },
+  { href: '/humidor', label: 'Humidor', icon: Package },
+  { href: '/marketplace', label: 'Market', icon: TrendingUp },
+  { href: '/profile', label: 'Profile', icon: User },
+];
+
 interface ProtectedLayoutClientProps {
   children: ReactNode;
-  navItems: NavItem[];
 }
 
-export function ProtectedLayoutClient({ children, navItems }: ProtectedLayoutClientProps) {
+export function ProtectedLayoutClient({ children }: ProtectedLayoutClientProps) {
   const pathname = usePathname();
 
   return (
