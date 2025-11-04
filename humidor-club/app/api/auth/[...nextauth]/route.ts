@@ -165,20 +165,36 @@ export const authOptions: NextAuthOptions = {
         return `${baseUrl}/dashboard`;
       }
       
+      // Never redirect to sign-in or auth pages after successful authentication
+      if (url.includes('/sign-in') || url.includes('/auth/')) {
+        console.log('🔀 Blocking redirect to sign-in/auth, redirecting to dashboard');
+        return `${baseUrl}/dashboard`;
+      }
+      
       // After sign in, always redirect to dashboard
       if (url === baseUrl || url === `${baseUrl}/`) {
         console.log('🔀 Redirecting to dashboard (default)');
         return `${baseUrl}/dashboard`;
       }
       
-      // If it's a relative URL, prepend baseUrl
+      // If it's a relative URL, check if it's a valid destination
       if (url.startsWith("/")) {
+        // Don't allow redirecting to sign-in or auth pages
+        if (url.includes('/sign-in') || url.includes('/auth/')) {
+          console.log('🔀 Blocking relative redirect to sign-in/auth, redirecting to dashboard');
+          return `${baseUrl}/dashboard`;
+        }
         console.log('🔀 Redirecting to relative URL:', url);
         return `${baseUrl}${url}`;
       }
       
-      // If it's an absolute URL on the same origin, use it
+      // If it's an absolute URL on the same origin, check if it's valid
       if (url.startsWith(baseUrl)) {
+        // Don't allow redirecting to sign-in or auth pages
+        if (url.includes('/sign-in') || url.includes('/auth/')) {
+          console.log('🔀 Blocking absolute redirect to sign-in/auth, redirecting to dashboard');
+          return `${baseUrl}/dashboard`;
+        }
         console.log('🔀 Redirecting to same-origin URL:', url);
         return url;
       }
