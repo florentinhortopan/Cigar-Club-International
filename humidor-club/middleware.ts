@@ -3,12 +3,29 @@ import { NextResponse } from 'next/server';
 
 export default withAuth(
   function middleware(req) {
-    // You can add additional middleware logic here if needed
+    // Log for debugging
+    console.log('🛡️ Middleware check:', {
+      path: req.nextUrl.pathname,
+      hasToken: !!req.nextauth.token,
+      tokenId: req.nextauth.token?.id,
+      tokenEmail: req.nextauth.token?.email,
+    });
+    
     return NextResponse.next();
   },
   {
     callbacks: {
-      authorized: ({ token }) => !!token, // Require authentication
+      authorized: ({ token, req }) => {
+        const isAuthorized = !!token;
+        console.log('🔐 Middleware authorized check:', {
+          path: req?.nextUrl?.pathname,
+          hasToken: !!token,
+          tokenId: token?.id,
+          tokenEmail: token?.email,
+          isAuthorized,
+        });
+        return isAuthorized;
+      },
     },
     pages: {
       signIn: '/sign-in',
