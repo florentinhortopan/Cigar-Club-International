@@ -31,12 +31,6 @@ export default async function ProtectedLayout({ children }: { children: React.Re
   return <ProtectedLayoutClient navItems={navItems}>{children}</ProtectedLayoutClient>;
 }
 
-interface NavItem {
-  href: string;
-  label: string;
-  icon: typeof Home;
-}
-
 const navItems: NavItem[] = [
   { href: '/dashboard', label: 'Home', icon: Home },
   { href: '/cigars', label: 'Cigars', icon: Search },
