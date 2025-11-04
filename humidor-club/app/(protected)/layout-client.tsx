@@ -1,8 +1,9 @@
+'use client';
+
 import { Home, Package, Search, TrendingUp, User } from 'lucide-react';
 import Link from 'next/link';
-import { redirect } from 'next/navigation';
-import { getSession } from '@/lib/auth';
-import { ProtectedLayoutClient } from './layout-client';
+import { usePathname } from 'next/navigation';
+import { ReactNode } from 'react';
 
 interface NavItem {
   href: string;
@@ -10,42 +11,12 @@ interface NavItem {
   icon: typeof Home;
 }
 
-const navItems: NavItem[] = [
-  { href: '/dashboard', label: 'Home', icon: Home },
-  { href: '/cigars', label: 'Cigars', icon: Search },
-  { href: '/humidor', label: 'Humidor', icon: Package },
-  { href: '/marketplace', label: 'Market', icon: TrendingUp },
-  { href: '/profile', label: 'Profile', icon: User },
-];
-
-export default async function ProtectedLayout({ children }: { children: React.ReactNode }) {
-  // Check authentication server-side
-  const session = await getSession();
-  
-  if (!session?.user) {
-    // Redirect to sign-in if not authenticated
-    redirect('/sign-in');
-  }
-
-  // Pass navigation items to client component
-  return <ProtectedLayoutClient navItems={navItems}>{children}</ProtectedLayoutClient>;
+interface ProtectedLayoutClientProps {
+  children: ReactNode;
+  navItems: NavItem[];
 }
 
-interface NavItem {
-  href: string;
-  label: string;
-  icon: typeof Home;
-}
-
-const navItems: NavItem[] = [
-  { href: '/dashboard', label: 'Home', icon: Home },
-  { href: '/cigars', label: 'Cigars', icon: Search },
-  { href: '/humidor', label: 'Humidor', icon: Package },
-  { href: '/marketplace', label: 'Market', icon: TrendingUp },
-  { href: '/profile', label: 'Profile', icon: User },
-];
-
-export default function ProtectedLayout({ children }: { children: ReactNode }) {
+export function ProtectedLayoutClient({ children, navItems }: ProtectedLayoutClientProps) {
   const pathname = usePathname();
 
   return (

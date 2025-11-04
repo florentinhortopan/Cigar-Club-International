@@ -1,57 +1,16 @@
-import { withAuth } from 'next-auth/middleware';
 import { NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
 
-export default withAuth(
-  function middleware(req) {
-    // Log for debugging
-    const token = req.nextauth.token;
-    console.log('🛡️ Middleware check:', {
-      path: req.nextUrl.pathname,
-      hasToken: !!token,
-      tokenId: token?.id,
-      tokenEmail: token?.email,
-      tokenSub: token?.sub,
-      cookies: req.cookies.getAll().map(c => ({ name: c.name, hasValue: !!c.value })),
-    });
-    
-    // If we have a token, allow access
-    if (token) {
-      return NextResponse.next();
-    }
-    
-    // Otherwise, continue with default behavior (redirect to sign-in)
-    return NextResponse.next();
-  },
-  {
-    callbacks: {
-      authorized: ({ token, req }) => {
-        const isAuthorized = !!token;
-        console.log('🔐 Middleware authorized check:', {
-          path: req?.nextUrl?.pathname,
-          hasToken: !!token,
-          tokenId: token?.id,
-          tokenEmail: token?.email,
-          tokenSub: token?.sub,
-          isAuthorized,
-          cookies: req?.cookies?.getAll()?.map((c: any) => ({ name: c.name, hasValue: !!c.value })),
-        });
-        return isAuthorized;
-      },
-    },
-    pages: {
-      signIn: '/sign-in',
-    },
-  }
-);
+// Simplified middleware - just pass through, authentication handled in layout
+export default function middleware(request: NextRequest) {
+  // Allow all requests - authentication is handled in the protected layout
+  return NextResponse.next();
+}
 
 export const config = {
+  // Only protect API routes that need authentication
   matcher: [
-    '/dashboard/:path*',
-    '/cigars/:path*',
-    '/humidor/:path*',
-    '/marketplace/:path*',
-    '/profile/:path*',
-    '/api/cigars/:path*', // Protect cigar creation API
+    '/api/cigars/:path*', // Protect cigar creation API only
   ],
 };
 
