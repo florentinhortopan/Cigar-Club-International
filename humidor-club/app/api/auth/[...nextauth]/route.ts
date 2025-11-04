@@ -4,6 +4,11 @@ import { PrismaAdapter } from '@auth/prisma-adapter';
 import { prisma } from '@/lib/prisma';
 import { Resend } from 'resend';
 
+// Set trustHost for Vercel (required for NextAuth v4+ on serverless)
+if (process.env.VERCEL) {
+  process.env.NEXTAUTH_URL = process.env.NEXTAUTH_URL || 'https://cigar-club-international.vercel.app';
+}
+
 const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null;
 
 export const authOptions: NextAuthOptions = {
@@ -266,7 +271,6 @@ export const authOptions: NextAuthOptions = {
     },
   },
   useSecureCookies: process.env.NODE_ENV === 'production',
-  trustHost: true, // Required for Vercel deployments
   secret: process.env.NEXTAUTH_SECRET,
 };
 
