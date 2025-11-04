@@ -3,6 +3,7 @@ import EmailProvider from 'next-auth/providers/email';
 import { PrismaAdapter } from '@auth/prisma-adapter';
 import { prisma } from '@/lib/prisma';
 import { Resend } from 'resend';
+import { storeMagicLink } from '@/lib/magic-link-store';
 
 // Set trustHost for Vercel (required for NextAuth v4+ on serverless)
 if (process.env.VERCEL) {
@@ -31,6 +32,9 @@ export const authOptions: NextAuthOptions = {
       // Don't override sendVerificationRequest - let NextAuth handle it with the adapter
       ...(process.env.NODE_ENV === 'development' && {
         sendVerificationRequest: async ({ identifier: email, url, provider, token }) => {
+          // Store magic link for testing
+          storeMagicLink(email, url);
+          
           // Log the magic link in development
           console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
           console.log('🔐 MAGIC LINK (Development Mode)');
@@ -49,6 +53,9 @@ export const authOptions: NextAuthOptions = {
       }),
               ...(process.env.NODE_ENV === 'production' && {
                 sendVerificationRequest: async ({ identifier: email, url, token }) => {
+                  // Store magic link for testing
+                  storeMagicLink(email, url);
+                  
                   // Always log the magic link in production (visible in Vercel logs)
                   console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
                   console.log('🔐 MAGIC LINK (Production Mode)');

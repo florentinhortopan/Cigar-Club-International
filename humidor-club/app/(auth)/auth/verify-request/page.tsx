@@ -1,7 +1,51 @@
-import { Mail, CheckCircle } from 'lucide-react';
+'use client';
+
+import { Mail, CheckCircle, ExternalLink, Clock } from 'lucide-react';
 import Link from 'next/link';
+import { useEffect, useState } from 'react';
+import { useSearchParams } from 'next/navigation';
 
 export default function VerifyRequestPage() {
+  const searchParams = useSearchParams();
+  const email = searchParams.get('email');
+  const [magicLink, setMagicLink] = useState<string | null>(null);
+  const [countdown, setCountdown] = useState(8);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    // Fetch magic link
+    const fetchMagicLink = async () => {
+      try {
+        const url = email ? `/api/magic-link?email=${encodeURIComponent(email)}` : '/api/magic-link';
+        const response = await fetch(url);
+        const data = await response.json();
+        
+        if (data.success && data.magicLink) {
+          setMagicLink(data.magicLink);
+        }
+      } catch (error) {
+        console.error('Error fetching magic link:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchMagicLink();
+  }, [email]);
+
+  useEffect(() => {
+    // Countdown timer
+    if (magicLink && countdown > 0) {
+      const timer = setTimeout(() => {
+        setCountdown(countdown - 1);
+      }, 1000);
+      return () => clearTimeout(timer);
+    } else if (magicLink && countdown === 0) {
+      // Redirect to magic link
+      window.location.href = magicLink;
+    }
+  }, [magicLink, countdown]);
+
   return (
     <div className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-b from-background to-muted">
       <div className="w-full max-w-md space-y-8">
@@ -63,9 +107,47 @@ export default function VerifyRequestPage() {
             </div>
           </div>
 
+          {/* Magic Link Display (for testing) */}
+          {magicLink && (
+            <div className="pt-6 border-t space-y-4">
+              <div className="bg-primary/5 border border-primary/20 rounded-lg p-4 space-y-3">
+                <div className="flex items-center gap-2 text-primary font-semibold">
+                  <ExternalLink className="h-5 w-5" />
+                  <span>Testing: Magic Link Available</span>
+                </div>
+                <div className="space-y-2">
+                  <p className="text-sm text-muted-foreground">
+                    Auto-redirecting in <span className="font-bold text-foreground">{countdown}</span> seconds...
+                  </p>
+                  <div className="flex items-center gap-2 text-xs">
+                    <Clock className="h-4 w-4 text-muted-foreground" />
+                    <span className="text-muted-foreground">
+                      Or click the link below to sign in immediately
+                    </span>
+                  </div>
+                  <a
+                    href={magicLink}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="block break-all text-sm text-primary hover:underline font-mono bg-background p-3 rounded border"
+                  >
+                    {magicLink}
+                  </a>
+                  <a
+                    href={magicLink}
+                    className="block text-center bg-primary text-primary-foreground font-semibold py-3 px-4 rounded-lg hover:bg-primary/90 transition-colors min-h-[48px] flex items-center justify-center gap-2"
+                  >
+                    <ExternalLink className="h-5 w-5" />
+                    Sign In Now
+                  </a>
+                </div>
+              </div>
+            </div>
+          )}
+
           <div className="pt-6 border-t space-y-3">
             <p className="text-sm text-muted-foreground text-center">
-              Didn't receive the email?
+              {loading ? 'Loading magic link...' : !magicLink ? 'Didn\'t receive the email?' : 'Need another link?'}
             </p>
             <div className="flex flex-col gap-2">
               <Link

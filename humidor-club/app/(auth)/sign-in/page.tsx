@@ -31,8 +31,8 @@ export default function SignInPage() {
         setIsLoading(false);
       } else if (result?.ok) {
         console.log('✅ Sign in successful, redirecting...');
-        // Success - redirect to verify page
-        window.location.href = '/auth/verify-request';
+        // Success - redirect to verify page with email
+        window.location.href = `/auth/verify-request?email=${encodeURIComponent(email)}`;
       } else {
         console.log('⚠️ Unexpected result:', result);
         setError('Unexpected response. Please try again.');
