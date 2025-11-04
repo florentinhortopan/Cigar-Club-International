@@ -138,16 +138,31 @@ export const authOptions: NextAuthOptions = {
     async redirect({ url, baseUrl }) {
       console.log('🔀 Redirect callback:', { url, baseUrl });
       
-      // Handle callbackUrl from middleware
+      // Handle callbackUrl from middleware (but ignore if it's sign-in)
       try {
         const parsedUrl = new URL(url, baseUrl);
         const callbackUrl = parsedUrl.searchParams.get('callbackUrl');
         if (callbackUrl) {
-          console.log('🔀 Found callbackUrl:', callbackUrl);
-          return callbackUrl.startsWith('/') ? `${baseUrl}${callbackUrl}` : callbackUrl;
+          const decodedCallbackUrl = decodeURIComponent(callbackUrl);
+          console.log('🔀 Found callbackUrl:', decodedCallbackUrl);
+          
+          // Ignore callbackUrl if it's pointing to sign-in or auth pages
+          if (decodedCallbackUrl.includes('/sign-in') || decodedCallbackUrl.includes('/auth/')) {
+            console.log('🔀 Ignoring sign-in callbackUrl, redirecting to dashboard');
+            return `${baseUrl}/dashboard`;
+          }
+          
+          // Use callbackUrl if it's a valid destination
+          return decodedCallbackUrl.startsWith('/') ? `${baseUrl}${decodedCallbackUrl}` : decodedCallbackUrl;
         }
       } catch (e) {
         console.log('🔀 Error parsing URL:', e);
+      }
+      
+      // If this is the email callback URL, always go to dashboard
+      if (url.includes('/api/auth/callback/email')) {
+        console.log('🔀 Email callback detected, redirecting to dashboard');
+        return `${baseUrl}/dashboard`;
       }
       
       // After sign in, always redirect to dashboard
