@@ -4,13 +4,22 @@ import { NextResponse } from 'next/server';
 export default withAuth(
   function middleware(req) {
     // Log for debugging
+    const token = req.nextauth.token;
     console.log('🛡️ Middleware check:', {
       path: req.nextUrl.pathname,
-      hasToken: !!req.nextauth.token,
-      tokenId: req.nextauth.token?.id,
-      tokenEmail: req.nextauth.token?.email,
+      hasToken: !!token,
+      tokenId: token?.id,
+      tokenEmail: token?.email,
+      tokenSub: token?.sub,
+      cookies: req.cookies.getAll().map(c => ({ name: c.name, hasValue: !!c.value })),
     });
     
+    // If we have a token, allow access
+    if (token) {
+      return NextResponse.next();
+    }
+    
+    // Otherwise, continue with default behavior (redirect to sign-in)
     return NextResponse.next();
   },
   {
@@ -22,7 +31,9 @@ export default withAuth(
           hasToken: !!token,
           tokenId: token?.id,
           tokenEmail: token?.email,
+          tokenSub: token?.sub,
           isAuthorized,
+          cookies: req?.cookies?.getAll()?.map((c: any) => ({ name: c.name, hasValue: !!c.value })),
         });
         return isAuthorized;
       },

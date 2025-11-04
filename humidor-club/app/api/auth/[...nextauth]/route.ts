@@ -261,11 +261,12 @@ export const authOptions: NextAuthOptions = {
         sameSite: 'lax',
         path: '/',
         secure: process.env.NODE_ENV === 'production',
-        domain: process.env.NODE_ENV === 'production' ? undefined : undefined, // Use default domain
+        // Don't set domain - let it default to the current domain
       },
     },
   },
   useSecureCookies: process.env.NODE_ENV === 'production',
+  trustHost: true, // Required for Vercel deployments
   secret: process.env.NEXTAUTH_SECRET,
 };
 
