@@ -213,7 +213,7 @@ export const authOptions: NextAuthOptions = {
     },
     async jwt({ token, user, account, profile, trigger }) {
       console.log('🎟️  JWT callback:', { 
-        token: token ? { sub: token.sub } : null, 
+        token: token ? { sub: token.sub, id: token.id, email: token.email } : null, 
         user: user ? { id: user.id, email: user.email } : null, 
         account: account ? { type: account.type } : null,
         trigger
@@ -221,7 +221,14 @@ export const authOptions: NextAuthOptions = {
       if (user) {
         token.id = user.id;
         token.email = user.email;
+        token.sub = user.id; // Ensure sub is set
       }
+      console.log('🎟️  JWT callback result:', { 
+        hasToken: !!token, 
+        tokenId: token?.id, 
+        tokenSub: token?.sub, 
+        tokenEmail: token?.email 
+      });
       return token;
     },
   },
