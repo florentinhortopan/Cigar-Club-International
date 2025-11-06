@@ -46,3 +46,4 @@ export function getAllMagicLinks(): MagicLinkEntry[] {
   return Array.from(magicLinkStore.values());
 }
 
+

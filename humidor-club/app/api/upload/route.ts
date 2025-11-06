@@ -67,9 +67,14 @@ export async function POST(request: Request) {
 
     if (isServerless) {
       // Use Vercel Blob Storage for serverless environments
+      const token = process.env.BLOB_READ_WRITE_TOKEN;
+      if (!token) {
+        throw new Error('BLOB_READ_WRITE_TOKEN environment variable is required for Vercel Blob storage');
+      }
       const blob = await put(filename, file, {
         access: 'public',
         contentType: file.type,
+        token, // Pass the token explicitly
       });
       url = blob.url;
       console.log('✅ Image uploaded to Vercel Blob:', url);

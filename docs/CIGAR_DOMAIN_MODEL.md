@@ -264,3 +264,5 @@ You already have a solid schema in the PRD canvas. To supercharge accuracy:
 
 **Remember**: This document is your north star when making architectural, data modeling, or feature decisions related to cigars and the database structure.
 
+
+

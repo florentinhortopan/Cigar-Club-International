@@ -31,12 +31,12 @@ If you're already using Session mode, add `?pgbouncer=true` to the end:
 
 **Before:**
 ```
-postgresql://postgres.yfqcfxxuefrprxzngkhk:283OqEtK4vnCFsLV@aws-1-us-east-1.pooler.supabase.com:6543/postgres
+postgresql://postgres.[your-password]@aws-1-us-east-1.pooler.supabase.com:6543/postgres
 ```
 
 **After:**
 ```
-postgresql://postgres.yfqcfxxuefrprxzngkhk:283OqEtK4vnCFsLV@aws-1-us-east-1.pooler.supabase.com:6543/postgres?pgbouncer=true
+postgresql://postgres.[your-password]@aws-1-us-east-1.pooler.supabase.com:6543/postgres?pgbouncer=true
 ```
 
 ### Option 3: Use Direct Connection (Not Recommended for Serverless)
