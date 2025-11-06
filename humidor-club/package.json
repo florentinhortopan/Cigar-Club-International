@@ -32,6 +32,7 @@
     "@auth/surrealdb-adapter": "^2.2.1",
     "@hookform/resolvers": "^5.2.2",
     "@prisma/client": "^6.18.0",
+    "@vercel/blob": "^2.0.0",
     "axios": "^1.13.1",
     "clsx": "^2.1.1",
     "lucide-react": "^0.552.0",

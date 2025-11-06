@@ -4,14 +4,18 @@ import { join } from 'path';
 import { existsSync } from 'fs';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/app/api/auth/[...nextauth]/route';
+import { put } from '@vercel/blob';
 
 const UPLOAD_DIR = join(process.cwd(), 'public', 'uploads', 'cigars');
 const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
 const ALLOWED_TYPES = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
 
-// Ensure upload directory exists
+// Check if we're in a serverless environment (Vercel)
+const isServerless = process.env.VERCEL === '1' || !!process.env.BLOB_READ_WRITE_TOKEN;
+
+// Ensure upload directory exists (only for local development)
 async function ensureUploadDir() {
-  if (!existsSync(UPLOAD_DIR)) {
+  if (!isServerless && !existsSync(UPLOAD_DIR)) {
     await mkdir(UPLOAD_DIR, { recursive: true });
   }
 }
@@ -26,8 +30,6 @@ export async function POST(request: Request) {
         { status: 401 }
       );
     }
-
-    await ensureUploadDir();
 
     const formData = await request.formData();
     const file = formData.get('file') as File;
@@ -59,22 +61,33 @@ export async function POST(request: Request) {
     const timestamp = Date.now();
     const randomStr = Math.random().toString(36).substring(2, 15);
     const extension = file.name.split('.').pop();
-    const filename = `${timestamp}-${randomStr}.${extension}`;
-    const filepath = join(UPLOAD_DIR, filename);
-    const url = `/uploads/cigars/${filename}`;
+    const filename = `cigars/${timestamp}-${randomStr}.${extension}`;
 
-    // Convert file to buffer and save
-    const bytes = await file.arrayBuffer();
-    const buffer = Buffer.from(bytes);
+    let url: string;
 
-    await writeFile(filepath, buffer);
-
-    console.log('✅ Image uploaded:', url);
+    if (isServerless) {
+      // Use Vercel Blob Storage for serverless environments
+      const blob = await put(filename, file, {
+        access: 'public',
+        contentType: file.type,
+      });
+      url = blob.url;
+      console.log('✅ Image uploaded to Vercel Blob:', url);
+    } else {
+      // Use local filesystem for development
+      await ensureUploadDir();
+      const filepath = join(UPLOAD_DIR, filename.split('/').pop()!);
+      const bytes = await file.arrayBuffer();
+      const buffer = Buffer.from(bytes);
+      await writeFile(filepath, buffer);
+      url = `/uploads/${filename}`;
+      console.log('✅ Image uploaded locally:', url);
+    }
 
     return NextResponse.json({
       success: true,
       url,
-      filename,
+      filename: filename.split('/').pop(),
     });
   } catch (error: any) {
     console.error('Error uploading file:', error);

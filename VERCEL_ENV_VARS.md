@@ -46,6 +46,13 @@ noreply@humidor.club
 ### RESEND_API_KEY
 *(Only if you want to send actual emails in production)*
 
+### BLOB_READ_WRITE_TOKEN
+**✅ Automatically provided by Vercel**
+- Vercel Blob Storage is automatically configured when deployed on Vercel
+- No manual setup needed - the token is automatically injected
+- Image uploads will use Vercel Blob Storage in production
+- In local development, images are saved to the local filesystem
+
 ---
 
 ## 📝 How to Set in Vercel
