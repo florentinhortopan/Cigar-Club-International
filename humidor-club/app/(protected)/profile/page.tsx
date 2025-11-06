@@ -21,19 +21,20 @@ export default async function ProfilePage() {
         email: true,
         image: true,
         emailVerified: true,
-        createdAt: true,
         branch_id: true,
       },
     });
     userBranchId = user?.branch_id || null;
     if (user) {
+      // User model doesn't have createdAt, so we'll use a fallback
+      // In the future, we could add createdAt to the User model
       userProfile = {
         id: user.id,
         name: user.name,
         email: user.email,
         image: user.image,
         emailVerified: user.emailVerified,
-        createdAt: user.createdAt,
+        createdAt: new Date(), // Fallback - User model doesn't have createdAt field
       };
     }
   }

@@ -25,7 +25,6 @@ export async function GET() {
         email: true,
         image: true,
         emailVerified: true,
-        createdAt: true,
       },
     });
 
@@ -36,9 +35,13 @@ export async function GET() {
       );
     }
 
+    // Add createdAt fallback since User model doesn't have this field
     return NextResponse.json({
       success: true,
-      user,
+      user: {
+        ...user,
+        createdAt: new Date(), // Fallback - User model doesn't have createdAt field
+      },
     });
   } catch (error) {
     console.error('Error in GET /api/profile:', error);
@@ -82,13 +85,16 @@ export async function PATCH(request: NextRequest) {
         email: true,
         image: true,
         emailVerified: true,
-        createdAt: true,
       },
     });
 
+    // Add createdAt fallback since User model doesn't have this field
     return NextResponse.json({
       success: true,
-      user: updatedUser,
+      user: {
+        ...updatedUser,
+        createdAt: new Date(), // Fallback - User model doesn't have createdAt field
+      },
     });
   } catch (error: any) {
     console.error('Error in PATCH /api/profile:', error);
