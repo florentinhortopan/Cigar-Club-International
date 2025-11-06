@@ -57,7 +57,8 @@ export async function POST(request: Request) {
       );
     }
 
-    // Generate unique filename
+    // Generate unique filename with 'cigars' subfolder
+    // This ensures all cigar images are organized in the 'cigars' folder in Vercel Blob
     const timestamp = Date.now();
     const randomStr = Math.random().toString(36).substring(2, 15);
     const extension = file.name.split('.').pop();
@@ -67,6 +68,7 @@ export async function POST(request: Request) {
 
     if (isServerless) {
       // Use Vercel Blob Storage for serverless environments
+      // The filename path 'cigars/...' creates a subfolder in Vercel Blob
       const token = process.env.BLOB_READ_WRITE_TOKEN;
       if (!token) {
         throw new Error('BLOB_READ_WRITE_TOKEN environment variable is required for Vercel Blob storage');
@@ -77,7 +79,7 @@ export async function POST(request: Request) {
         token, // Pass the token explicitly
       });
       url = blob.url;
-      console.log('✅ Image uploaded to Vercel Blob:', url);
+      console.log(`✅ Image uploaded to Vercel Blob in 'cigars' subfolder: ${url}`);
     } else {
       // Use local filesystem for development
       await ensureUploadDir();
