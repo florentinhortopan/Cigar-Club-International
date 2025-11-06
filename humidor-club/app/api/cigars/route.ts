@@ -142,11 +142,14 @@ export async function POST(request: Request) {
     if (cigar.id && body.add_to_humidor !== false) {
       try {
         const { addToHumidor } = await import('@/lib/humidor-queries');
-        console.log('🔄 Adding cigar to humidor for user:', session.user.id, 'cigar:', cigar.id);
+        const quantity = body.humidor_quantity && body.humidor_quantity > 0 
+          ? body.humidor_quantity 
+          : 1;
+        console.log('🔄 Adding cigar to humidor for user:', session.user.id, 'cigar:', cigar.id, 'quantity:', quantity);
         const humidorItem = await addToHumidor({
           userId: session.user.id,
           cigarId: cigar.id,
-          quantity: 1,
+          quantity: quantity,
         });
         console.log('✅ Added to humidor:', humidorItem);
       } catch (humidError: any) {

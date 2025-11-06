@@ -44,6 +44,7 @@ export default function AddCigarPage() {
   const [images, setImages] = useState<string[]>([]);
   const [uploadingImages, setUploadingImages] = useState(false);
   const [addToHumidor, setAddToHumidor] = useState(true); // Default to true for convenience
+  const [humidorQuantity, setHumidorQuantity] = useState('1'); // Quantity to add to humidor
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Load brands on mount
@@ -167,6 +168,7 @@ export default function AddCigarPage() {
       country: country || undefined,
       image_urls: images.length > 0 ? images : undefined,
       add_to_humidor: addToHumidor, // Flag to add to humidor
+      humidor_quantity: addToHumidor ? parseInt(humidorQuantity) || 1 : undefined, // Quantity to add
     };
 
     console.log('📤 Submitting cigar data:', {
@@ -525,18 +527,46 @@ export default function AddCigarPage() {
               </div>
             </div>
 
-            {/* Add to Humidor Checkbox */}
-            <div className="flex items-center gap-2 p-4 bg-muted/50 rounded-lg">
-              <input
-                type="checkbox"
-                id="addToHumidor"
-                checked={addToHumidor}
-                onChange={(e) => setAddToHumidor(e.target.checked)}
-                className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
-              />
-              <label htmlFor="addToHumidor" className="text-sm font-medium cursor-pointer">
-                Add to my humidor
-              </label>
+            {/* Add to Humidor Section */}
+            <div className="space-y-3 p-4 bg-muted/50 rounded-lg">
+              <div className="flex items-center gap-2">
+                <input
+                  type="checkbox"
+                  id="addToHumidor"
+                  checked={addToHumidor}
+                  onChange={(e) => setAddToHumidor(e.target.checked)}
+                  className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
+                />
+                <label htmlFor="addToHumidor" className="text-sm font-medium cursor-pointer">
+                  Add to my humidor
+                </label>
+              </div>
+              
+              {addToHumidor && (
+                <div className="pl-6 space-y-2">
+                  <label htmlFor="humidorQuantity" className="text-sm font-medium">
+                    Quantity
+                  </label>
+                  <input
+                    type="number"
+                    id="humidorQuantity"
+                    value={humidorQuantity}
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      if (val === '' || (parseInt(val) > 0 && parseInt(val) <= 1000)) {
+                        setHumidorQuantity(val);
+                      }
+                    }}
+                    min="1"
+                    max="1000"
+                    placeholder="1"
+                    className="w-full p-3 rounded-lg border bg-background focus:outline-none focus:ring-2 focus:ring-primary"
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    Number of cigars of this kind to add to your humidor
+                  </p>
+                </div>
+              )}
             </div>
 
             <div className="flex gap-3">
