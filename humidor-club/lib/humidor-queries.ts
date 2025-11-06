@@ -127,13 +127,34 @@ export async function getHumidorStats(userId: string) {
     });
 
     const totalCigars = items.reduce((sum, item) => sum + item.quantity, 0);
+    
+    // Get unique cigar IDs to fetch pricing data
+    const cigarIds = [...new Set(items.map(item => item.cigar_id))];
+    
+    // Fetch all cigars in one query for pricing fallback
+    const cigars = await prisma.cigar.findMany({
+      where: { id: { in: cigarIds } },
+      select: {
+        id: true,
+        typical_street_cents: true,
+        msrp_cents: true,
+      },
+    });
+    
+    // Create a map for quick lookup
+    const cigarPriceMap = new Map(
+      cigars.map(c => [
+        c.id,
+        c.typical_street_cents || c.msrp_cents || 0
+      ])
+    );
+    
+    // Calculate total value using purchase price, or fallback to cigar's typical street price or MSRP
     const totalValue = items.reduce((sum, item) => {
-      const price = item.purchase_price_cents || 0;
-      return sum + (price * item.quantity);
+      const pricePerCigar = item.purchase_price_cents || cigarPriceMap.get(item.cigar_id) || 0;
+      return sum + (pricePerCigar * item.quantity);
     }, 0);
 
-    // Get unique cigar IDs to count brands
-    const cigarIds = [...new Set(items.map(item => item.cigar_id))];
     const uniqueCigars = cigarIds.length;
 
     return {

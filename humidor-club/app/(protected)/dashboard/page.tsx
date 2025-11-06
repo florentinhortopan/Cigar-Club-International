@@ -1,7 +1,53 @@
+'use client';
+
 import { Cigarette, Package, TrendingUp, Users } from 'lucide-react';
 import Link from 'next/link';
+import { useEffect, useState } from 'react';
+
+interface DashboardStats {
+  totalCigarsInClub: number;
+  humidorCigars: number;
+  humidorValue: number;
+  tastingNotes: number;
+  activeListings: number;
+  reputation: number;
+}
 
 export default function DashboardPage() {
+  const [stats, setStats] = useState<DashboardStats>({
+    totalCigarsInClub: 0,
+    humidorCigars: 0,
+    humidorValue: 0,
+    tastingNotes: 0,
+    activeListings: 0,
+    reputation: 0,
+  });
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchStats();
+  }, []);
+
+  const fetchStats = async () => {
+    try {
+      setLoading(true);
+      const response = await fetch('/api/dashboard/stats');
+      const data = await response.json();
+      
+      if (data.success) {
+        setStats(data.stats);
+      }
+    } catch (error) {
+      console.error('Error fetching dashboard stats:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const formatCurrency = (cents: number) => {
+    return `$${(cents / 100).toFixed(2)}`;
+  };
+
   return (
     <div className="space-y-8">
       {/* Header */}
@@ -14,7 +60,7 @@ export default function DashboardPage() {
 
       {/* Stats Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        {/* Stat Card 1 */}
+        {/* Stat Card 1 - Humidor */}
         <div className="bg-card border rounded-xl p-6 space-y-2">
           <div className="flex items-center justify-between">
             <div className="p-2 rounded-lg bg-primary/10">
@@ -23,26 +69,31 @@ export default function DashboardPage() {
             <span className="text-xs text-muted-foreground">HUMIDOR</span>
           </div>
           <div>
-            <p className="text-3xl font-bold">0</p>
+            <p className="text-3xl font-bold">{loading ? '...' : stats.humidorCigars}</p>
             <p className="text-sm text-muted-foreground">Cigars</p>
+            {!loading && stats.humidorValue > 0 && (
+              <p className="text-xs text-muted-foreground mt-1">
+                Value: {formatCurrency(stats.humidorValue)}
+              </p>
+            )}
           </div>
         </div>
 
-        {/* Stat Card 2 */}
+        {/* Stat Card 2 - Club Cigars */}
         <div className="bg-card border rounded-xl p-6 space-y-2">
           <div className="flex items-center justify-between">
             <div className="p-2 rounded-lg bg-primary/10">
               <Cigarette className="h-5 w-5 text-primary" />
             </div>
-            <span className="text-xs text-muted-foreground">RATINGS</span>
+            <span className="text-xs text-muted-foreground">CLUB</span>
           </div>
           <div>
-            <p className="text-3xl font-bold">0</p>
-            <p className="text-sm text-muted-foreground">Tasting Notes</p>
+            <p className="text-3xl font-bold">{loading ? '...' : stats.totalCigarsInClub}</p>
+            <p className="text-sm text-muted-foreground">Total Cigars</p>
           </div>
         </div>
 
-        {/* Stat Card 3 */}
+        {/* Stat Card 3 - Marketplace */}
         <div className="bg-card border rounded-xl p-6 space-y-2">
           <div className="flex items-center justify-between">
             <div className="p-2 rounded-lg bg-primary/10">
@@ -51,12 +102,12 @@ export default function DashboardPage() {
             <span className="text-xs text-muted-foreground">MARKETPLACE</span>
           </div>
           <div>
-            <p className="text-3xl font-bold">0</p>
+            <p className="text-3xl font-bold">{loading ? '...' : stats.activeListings}</p>
             <p className="text-sm text-muted-foreground">Active Listings</p>
           </div>
         </div>
 
-        {/* Stat Card 4 */}
+        {/* Stat Card 4 - Reputation */}
         <div className="bg-card border rounded-xl p-6 space-y-2">
           <div className="flex items-center justify-between">
             <div className="p-2 rounded-lg bg-primary/10">
@@ -65,7 +116,7 @@ export default function DashboardPage() {
             <span className="text-xs text-muted-foreground">REPUTATION</span>
           </div>
           <div>
-            <p className="text-3xl font-bold">0.0</p>
+            <p className="text-3xl font-bold">{loading ? '...' : stats.reputation.toFixed(1)}</p>
             <p className="text-sm text-muted-foreground">Rating</p>
           </div>
         </div>
