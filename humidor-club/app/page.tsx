@@ -1,7 +1,24 @@
 import Link from 'next/link';
-import { Cigarette, Shield, Users, TrendingUp } from 'lucide-react';
+import { Cigarette, Shield, Users, TrendingUp, MapPin, ArrowRight } from 'lucide-react';
+import { prisma } from '@/lib/prisma';
 
-export default function LandingPage() {
+export default async function LandingPage() {
+  // Fetch active branches to display
+  const branches = await prisma.branch.findMany({
+    where: { is_active: true },
+    include: {
+      _count: {
+        select: {
+          members: true,
+        },
+      },
+    },
+    orderBy: [
+      { member_count: 'desc' },
+      { created_at: 'desc' },
+    ],
+    take: 6, // Show top 6 branches
+  });
   return (
     <div className="min-h-screen bg-gradient-to-b from-background to-muted">
       {/* Hero Section */}
@@ -45,6 +62,62 @@ export default function LandingPage() {
           </p>
         </div>
       </div>
+
+      {/* Branches Section */}
+      {branches.length > 0 && (
+        <div className="container mx-auto px-4 py-16">
+          <h2 className="text-3xl md:text-4xl font-bold text-center mb-4">
+            Find Your Local Branch
+          </h2>
+          <p className="text-center text-muted-foreground mb-12">
+            Join a branch near you or create your own
+          </p>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {branches.map((branch) => (
+              <Link
+                key={branch.id}
+                href={`/${branch.slug}`}
+                className="bg-card border rounded-xl p-6 hover:shadow-lg transition-shadow"
+              >
+                <div className="flex items-start justify-between mb-4">
+                  <div className="flex-1">
+                    <h3 className="text-xl font-semibold mb-2">{branch.name}</h3>
+                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                      <MapPin className="h-4 w-4" />
+                      <span>
+                        {[branch.city, branch.region, branch.country]
+                          .filter(Boolean)
+                          .join(', ')}
+                      </span>
+                    </div>
+                  </div>
+                  <ArrowRight className="h-5 w-5 text-muted-foreground" />
+                </div>
+                <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                  <div className="flex items-center gap-1">
+                    <Users className="h-4 w-4" />
+                    <span>{branch._count.members} {branch._count.members === 1 ? 'member' : 'members'}</span>
+                  </div>
+                </div>
+                {branch.description && (
+                  <p className="text-sm text-muted-foreground mt-3 line-clamp-2">
+                    {branch.description}
+                  </p>
+                )}
+              </Link>
+            ))}
+          </div>
+          <div className="text-center mt-8">
+            <Link
+              href="/sign-in"
+              className="inline-flex items-center gap-2 text-primary hover:underline font-medium"
+            >
+              View all branches or create your own
+              <ArrowRight className="h-4 w-4" />
+            </Link>
+          </div>
+        </div>
+      )}
 
       {/* Features Section */}
       <div id="features" className="container mx-auto px-4 py-16">

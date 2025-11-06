@@ -1,6 +1,21 @@
 import { User, Settings, Award, History } from 'lucide-react';
+import { getServerSession } from 'next-auth';
+import { authOptions } from '@/app/api/auth/[...nextauth]/route';
+import { prisma } from '@/lib/prisma';
+import BranchSection from './branch-section';
 
-export default function ProfilePage() {
+export default async function ProfilePage() {
+  const session = await getServerSession(authOptions);
+  
+  // Get user with branch info
+  let userBranchId: string | null = null;
+  if (session?.user?.id) {
+    const user = await prisma.user.findUnique({
+      where: { id: session.user.id },
+      select: { branch_id: true },
+    });
+    userBranchId = user?.branch_id || null;
+  }
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -80,6 +95,9 @@ export default function ProfilePage() {
           <p className="text-sm text-muted-foreground mt-1">Members</p>
         </div>
       </div>
+
+      {/* Branch Section */}
+      <BranchSection userBranchId={userBranchId} />
 
       {/* Recent Activity */}
       <div className="bg-card border rounded-xl p-6">

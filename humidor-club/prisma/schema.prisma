@@ -47,8 +47,13 @@ model User {
   email         String?   @unique
   emailVerified DateTime?
   image         String?
+  branch_id     String?  // Branch/location the user belongs to
+  branch        Branch?  @relation(fields: [branch_id], references: [id], onDelete: SetNull)
   accounts      Account[]
   sessions      Session[]
+  created_branches Branch[] @relation("BranchCreator") // Branches created by this user
+
+  @@index([branch_id])
 }
 
 model VerificationToken {
@@ -57,6 +62,37 @@ model VerificationToken {
   expires    DateTime
 
   @@unique([identifier, token])
+}
+
+// =============================================================================
+// BRANCHES / LOCATIONS
+// =============================================================================
+
+model Branch {
+  id                String   @id @default(cuid())
+  name              String   // e.g., "New York Chapter", "London Branch"
+  slug              String   @unique // URL-friendly identifier: "new-york", "london"
+  city              String?
+  region            String?  // State/Province
+  country           String?
+  description       String?  @db.Text // Branch description
+  homepage_content  String?  @db.Text // Custom homepage content (markdown or HTML)
+  logo_url          String?
+  banner_url        String?
+  contact_email     String?
+  website           String?
+  created_by_id     String   // User who created this branch
+  created_by        User     @relation("BranchCreator", fields: [created_by_id], references: [id], onDelete: Restrict)
+  is_active         Boolean  @default(true)
+  member_count      Int      @default(0) // Cached count of members
+  created_at        DateTime @default(now())
+  updated_at        DateTime @updatedAt
+  
+  members           User[]   // Users belonging to this branch
+
+  @@index([slug])
+  @@index([country, city])
+  @@index([is_active])
 }
 
 // =============================================================================
