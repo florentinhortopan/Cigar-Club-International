@@ -1,64 +1,68 @@
-import { User, Settings, Award, History } from 'lucide-react';
+import { Award, History, User } from 'lucide-react';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/app/api/auth/[...nextauth]/route';
 import { prisma } from '@/lib/prisma';
 import BranchSection from './branch-section';
+import ProfileEditor from './profile-editor';
 
 export default async function ProfilePage() {
   const session = await getServerSession(authOptions);
   
-  // Get user with branch info
+  // Get user with branch info and profile data
   let userBranchId: string | null = null;
+  let userProfile = null;
+  
   if (session?.user?.id) {
     const user = await prisma.user.findUnique({
       where: { id: session.user.id },
-      select: { branch_id: true },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        image: true,
+        emailVerified: true,
+        createdAt: true,
+        branch_id: true,
+      },
     });
     userBranchId = user?.branch_id || null;
+    if (user) {
+      userProfile = {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        image: user.image,
+        emailVerified: user.emailVerified,
+        createdAt: user.createdAt,
+      };
+    }
   }
+
+  if (!userProfile) {
+    return (
+      <div className="space-y-6">
+        <h1 className="text-3xl font-bold">Profile</h1>
+        <div className="bg-card border rounded-xl p-6 text-center">
+          <p className="text-muted-foreground">Unable to load profile</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
         <h1 className="text-3xl font-bold">Profile</h1>
-        <button className="flex items-center gap-2 border font-semibold px-4 py-2 rounded-lg hover:bg-muted transition-colors min-h-[48px]">
-          <Settings className="h-5 w-5" />
-          <span className="hidden sm:inline">Edit</span>
-        </button>
       </div>
 
-      {/* Profile Card */}
-      <div className="bg-card border rounded-xl p-6">
-        <div className="flex flex-col sm:flex-row gap-6">
-          {/* Avatar */}
-          <div className="flex justify-center sm:justify-start">
-            <div className="h-24 w-24 rounded-full bg-primary/10 flex items-center justify-center">
-              <User className="h-12 w-12 text-primary" />
-            </div>
-          </div>
-
-          {/* Info */}
-          <div className="flex-1 text-center sm:text-left">
-            <h2 className="text-2xl font-bold">Member</h2>
-            <p className="text-muted-foreground mt-1">member@example.com</p>
-            
-            <div className="flex flex-wrap gap-4 mt-4 justify-center sm:justify-start">
-              <div>
-                <p className="text-sm text-muted-foreground">Member Since</p>
-                <p className="font-semibold">November 2025</p>
-              </div>
-              <div>
-                <p className="text-sm text-muted-foreground">Reputation</p>
-                <p className="font-semibold">New Member</p>
-              </div>
-              <div>
-                <p className="text-sm text-muted-foreground">Deals</p>
-                <p className="font-semibold">0</p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
+      {/* Profile Editor */}
+      <ProfileEditor 
+        user={userProfile} 
+        onUpdate={() => {
+          // Profile will refresh on next page load
+        }}
+      />
 
       {/* Stats Grid */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
