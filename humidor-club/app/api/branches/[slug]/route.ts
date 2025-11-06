@@ -1,4 +1,4 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 
 /**
@@ -6,12 +6,13 @@ import { prisma } from '@/lib/prisma';
  * Get a specific branch by slug
  */
 export async function GET(
-  request: Request,
-  { params }: { params: { slug: string } }
+  request: NextRequest,
+  context: { params: Promise<{ slug: string }> }
 ) {
   try {
+    const { slug } = await context.params;
     const branch = await prisma.branch.findUnique({
-      where: { slug: params.slug },
+      where: { slug },
       include: {
         created_by: {
           select: {

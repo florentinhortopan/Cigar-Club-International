@@ -4,14 +4,15 @@ import { prisma } from '@/lib/prisma';
 import { notFound } from 'next/navigation';
 
 interface BranchPageProps {
-  params: {
+  params: Promise<{
     'branch-slug': string;
-  };
+  }>;
 }
 
 export default async function BranchPage({ params }: BranchPageProps) {
+  const { 'branch-slug': branchSlug } = await params;
   const branch = await prisma.branch.findUnique({
-    where: { slug: params['branch-slug'] },
+    where: { slug: branchSlug },
     include: {
       created_by: {
         select: {
