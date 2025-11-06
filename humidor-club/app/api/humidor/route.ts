@@ -94,3 +94,44 @@ export async function POST(request: Request) {
   }
 }
 
+export async function DELETE(request: Request) {
+  try {
+    const session = await getServerSession(authOptions);
+    if (!session?.user?.id) {
+      return NextResponse.json(
+        { success: false, error: 'Unauthorized' },
+        { status: 401 }
+      );
+    }
+
+    const { searchParams } = new URL(request.url);
+    const cigarId = searchParams.get('cigar_id');
+
+    if (!cigarId) {
+      return NextResponse.json(
+        { success: false, error: 'Missing cigar_id' },
+        { status: 400 }
+      );
+    }
+
+    // Find and delete the humidor item
+    const deleted = await prisma.humidorItem.deleteMany({
+      where: {
+        user_id: session.user.id,
+        cigar_id: cigarId,
+      },
+    });
+
+    return NextResponse.json({
+      success: true,
+      deleted: deleted.count > 0,
+    });
+  } catch (error) {
+    console.error('Error in DELETE /api/humidor:', error);
+    return NextResponse.json(
+      { success: false, error: 'Failed to remove from humidor' },
+      { status: 500 }
+    );
+  }
+}
+

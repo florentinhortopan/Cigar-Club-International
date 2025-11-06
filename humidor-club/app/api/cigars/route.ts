@@ -7,12 +7,59 @@ export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url);
     const limit = parseInt(searchParams.get('limit') || '50');
+    const search = searchParams.get('search') || '';
     
-    const cigars = await getCigars(limit);
+    // Get user session to check humidor status
+    const session = await getServerSession(authOptions);
+    const userId = session?.user?.id;
+    
+    // Get cigars with optional search
+    const { prisma } = await import('@/lib/prisma');
+    let cigars;
+    
+    if (search) {
+      // Search by brand name, line name, or vitola
+      cigars = await prisma.cigar.findMany({
+        include: {
+          line: {
+            include: {
+              brand: true,
+            },
+          },
+        },
+        where: {
+          OR: [
+            { vitola: { contains: search, mode: 'insensitive' } },
+            { line: { name: { contains: search, mode: 'insensitive' } } },
+            { line: { brand: { name: { contains: search, mode: 'insensitive' } } } },
+          ],
+        },
+        take: limit,
+        orderBy: { created_at: 'desc' },
+      });
+    } else {
+      cigars = await getCigars(limit);
+    }
+    
+    // If user is logged in, check which cigars are in their humidor
+    let humidorCigarIds: string[] = [];
+    if (userId) {
+      const humidorItems = await prisma.humidorItem.findMany({
+        where: { user_id: userId },
+        select: { cigar_id: true },
+      });
+      humidorCigarIds = humidorItems.map(item => item.cigar_id);
+    }
+    
+    // Add isInMyHumidor flag to each cigar
+    const cigarsWithHumidorStatus = cigars.map(cigar => ({
+      ...cigar,
+      isInMyHumidor: humidorCigarIds.includes(cigar.id),
+    }));
     
     return NextResponse.json({
       success: true,
-      cigars,
+      cigars: cigarsWithHumidorStatus,
     });
   } catch (error) {
     console.error('Error in GET /api/cigars:', error);
@@ -91,8 +138,8 @@ export async function POST(request: Request) {
     const cigar = await createCigar(cigarInput);
     console.log('✅ Cigar created:', cigar.id);
     
-    // Automatically add to user's humidor
-    if (cigar.id) {
+    // Optionally add to user's humidor if requested
+    if (cigar.id && body.add_to_humidor !== false) {
       try {
         const { addToHumidor } = await import('@/lib/humidor-queries');
         console.log('🔄 Adding cigar to humidor for user:', session.user.id, 'cigar:', cigar.id);

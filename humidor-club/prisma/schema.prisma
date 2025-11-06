@@ -160,6 +160,8 @@ model HumidorItem {
   condition            String? // e.g., "Perfect", "Minor Damage"
   notes                String?
   acquired_from        String? // e.g., "Retail", "Trade", "Gift"
+  smoked_count         Int       @default(0) // Number of cigars smoked from this item
+  last_smoked_date     DateTime? // Date when the last cigar was smoked
   created_at           DateTime  @default(now())
   updated_at           DateTime  @updatedAt
 
@@ -168,4 +170,5 @@ model HumidorItem {
 
   @@index([user_id])
   @@index([cigar_id])
+  @@index([last_smoked_date])
 }

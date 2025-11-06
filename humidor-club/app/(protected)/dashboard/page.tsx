@@ -6,6 +6,7 @@ import { useEffect, useState } from 'react';
 
 interface DashboardStats {
   totalCigarsInClub: number;
+  totalClubValue: number;
   humidorCigars: number;
   humidorValue: number;
   tastingNotes: number;
@@ -16,6 +17,7 @@ interface DashboardStats {
 export default function DashboardPage() {
   const [stats, setStats] = useState<DashboardStats>({
     totalCigarsInClub: 0,
+    totalClubValue: 0,
     humidorCigars: 0,
     humidorValue: 0,
     tastingNotes: 0,
@@ -90,6 +92,11 @@ export default function DashboardPage() {
           <div>
             <p className="text-3xl font-bold">{loading ? '...' : stats.totalCigarsInClub}</p>
             <p className="text-sm text-muted-foreground">Total Cigars</p>
+            {!loading && stats.totalClubValue > 0 && (
+              <p className="text-xs text-muted-foreground mt-1">
+                Value: {formatCurrency(stats.totalClubValue)}
+              </p>
+            )}
           </div>
         </div>
 

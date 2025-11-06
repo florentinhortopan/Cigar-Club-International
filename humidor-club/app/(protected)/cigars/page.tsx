@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { Plus, Cigarette, Image as ImageIcon, Edit } from 'lucide-react';
+import { Plus, Cigarette, Image as ImageIcon, Edit, Search, Check, Package } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import Image from 'next/image';
 
@@ -17,6 +17,7 @@ interface Cigar {
   body?: string | null;
   msrp_cents?: number | null;
   image_urls?: string | null; // JSON string from DB
+  isInMyHumidor?: boolean; // Added flag
   line?: {
     id: string;
     name: string;
@@ -30,29 +31,23 @@ interface Cigar {
 export default function CigarsPage() {
   const [cigars, setCigars] = useState<Cigar[]>([]);
   const [loading, setLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [togglingCigars, setTogglingCigars] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     fetchCigars();
-  }, []);
+  }, [searchQuery]);
 
   const fetchCigars = async () => {
     try {
       setLoading(true);
-      const response = await fetch('/api/cigars');
+      const url = searchQuery 
+        ? `/api/cigars?search=${encodeURIComponent(searchQuery)}`
+        : '/api/cigars';
+      const response = await fetch(url);
       const data = await response.json();
       
       if (data.success) {
-        console.log('📦 Received cigars from API:', data.cigars.length);
-        if (data.cigars.length > 0) {
-          console.log('🔍 First cigar data:', {
-            id: data.cigars[0].id,
-            vitola: data.cigars[0].vitola,
-            hasLine: !!data.cigars[0].line,
-            lineName: data.cigars[0].line?.name,
-            brandName: data.cigars[0].line?.brand?.name,
-            fullLine: data.cigars[0].line,
-          });
-        }
         setCigars(data.cigars || []);
       } else {
         console.error('Failed to fetch cigars:', data.error);
@@ -61,6 +56,41 @@ export default function CigarsPage() {
       console.error('Error fetching cigars:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const toggleHumidor = async (cigarId: string) => {
+    const cigar = cigars.find(c => c.id === cigarId);
+    if (!cigar) return;
+
+    setTogglingCigars(prev => new Set(prev).add(cigarId));
+
+    try {
+      const response = await fetch(`/api/humidor/toggle?cigar_id=${encodeURIComponent(cigarId)}`, {
+        method: 'POST',
+      });
+      const data = await response.json();
+
+      if (data.success) {
+        // Update the cigar's humidor status
+        setCigars(prevCigars =>
+          prevCigars.map(c =>
+            c.id === cigarId ? { ...c, isInMyHumidor: data.inHumidor } : c
+          )
+        );
+      } else {
+        console.error('Failed to toggle humidor:', data.error);
+        alert('Failed to update humidor. Please try again.');
+      }
+    } catch (error) {
+      console.error('Error toggling humidor:', error);
+      alert('An error occurred. Please try again.');
+    } finally {
+      setTogglingCigars(prev => {
+        const next = new Set(prev);
+        next.delete(cigarId);
+        return next;
+      });
     }
   };
 
@@ -94,6 +124,18 @@ export default function CigarsPage() {
           <Plus className="h-5 w-5" />
           <span className="hidden sm:inline">Add Cigar</span>
         </Link>
+      </div>
+
+      {/* Search Bar */}
+      <div className="relative">
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+        <input
+          type="text"
+          placeholder="Search by brand, line, or vitola..."
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          className="w-full pl-10 pr-4 py-3 rounded-lg border bg-background focus:outline-none focus:ring-2 focus:ring-primary"
+        />
       </div>
 
       {loading ? (
@@ -150,14 +192,40 @@ export default function CigarsPage() {
                       </div>
                       <p className="text-primary font-medium">{cigar.vitola}</p>
                     </div>
-                    <Link
-                      href={`/cigars/${cigar.id}/edit`}
-                      className="p-2 -m-2 hover:bg-muted rounded-lg transition-colors"
-                      title="Edit cigar"
-                    >
-                      <Edit className="h-4 w-4 text-muted-foreground hover:text-foreground" />
-                    </Link>
+                    <div className="flex items-center gap-1">
+                      <button
+                        onClick={() => toggleHumidor(cigar.id)}
+                        disabled={togglingCigars.has(cigar.id)}
+                        className={`p-2 -m-2 rounded-lg transition-colors ${
+                          cigar.isInMyHumidor
+                            ? 'bg-primary/10 text-primary hover:bg-primary/20'
+                            : 'text-muted-foreground hover:bg-muted hover:text-foreground'
+                        }`}
+                        title={cigar.isInMyHumidor ? 'Remove from my humidor' : 'Add to my humidor'}
+                      >
+                        {cigar.isInMyHumidor ? (
+                          <Check className="h-4 w-4" />
+                        ) : (
+                          <Package className="h-4 w-4" />
+                        )}
+                      </button>
+                      <Link
+                        href={`/cigars/${cigar.id}/edit`}
+                        className="p-2 -m-2 hover:bg-muted rounded-lg transition-colors"
+                        title="Edit cigar"
+                      >
+                        <Edit className="h-4 w-4 text-muted-foreground hover:text-foreground" />
+                      </Link>
+                    </div>
                   </div>
+                  
+                  {/* Humidor indicator badge */}
+                  {cigar.isInMyHumidor && (
+                    <div className="mb-2 flex items-center gap-1 text-xs text-primary">
+                      <Check className="h-3 w-3" />
+                      <span>In my humidor</span>
+                    </div>
+                  )}
 
                   <div className="space-y-2 text-sm text-muted-foreground">
                     {cigar.ring_gauge && cigar.length_inches && (

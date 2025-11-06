@@ -43,6 +43,7 @@ export default function AddCigarPage() {
   const [country, setCountry] = useState('');
   const [images, setImages] = useState<string[]>([]);
   const [uploadingImages, setUploadingImages] = useState(false);
+  const [addToHumidor, setAddToHumidor] = useState(true); // Default to true for convenience
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Load brands on mount
@@ -165,6 +166,7 @@ export default function AddCigarPage() {
       msrp_cents: price ? Math.round(parseFloat(price) * 100) : undefined,
       country: country || undefined,
       image_urls: images.length > 0 ? images : undefined,
+      add_to_humidor: addToHumidor, // Flag to add to humidor
     };
 
     console.log('📤 Submitting cigar data:', {
@@ -521,6 +523,20 @@ export default function AddCigarPage() {
                   )}
                 </div>
               </div>
+            </div>
+
+            {/* Add to Humidor Checkbox */}
+            <div className="flex items-center gap-2 p-4 bg-muted/50 rounded-lg">
+              <input
+                type="checkbox"
+                id="addToHumidor"
+                checked={addToHumidor}
+                onChange={(e) => setAddToHumidor(e.target.checked)}
+                className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
+              />
+              <label htmlFor="addToHumidor" className="text-sm font-medium cursor-pointer">
+                Add to my humidor
+              </label>
             </div>
 
             <div className="flex gap-3">

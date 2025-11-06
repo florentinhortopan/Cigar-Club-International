@@ -18,6 +18,8 @@ export interface HumidorItem {
   condition?: string | null;
   notes?: string | null;
   acquired_from?: string | null;
+  smoked_count: number;
+  last_smoked_date?: Date | null;
   created_at: Date;
   updated_at: Date;
 }
@@ -120,13 +122,56 @@ export async function removeFromHumidor(itemId: string, userId: string): Promise
   }
 }
 
+export async function markCigarAsSmoked(
+  itemId: string,
+  userId: string,
+  count: number = 1,
+  smokedDate?: Date
+): Promise<HumidorItem> {
+  try {
+    // Verify ownership
+    const item = await prisma.humidorItem.findFirst({
+      where: { id: itemId, user_id: userId },
+    });
+
+    if (!item) {
+      throw new Error('Humidor item not found or access denied');
+    }
+
+    if (item.quantity < count) {
+      throw new Error(`Cannot smoke ${count} cigars. Only ${item.quantity} available.`);
+    }
+
+    const newQuantity = item.quantity - count;
+    const newSmokedCount = item.smoked_count + count;
+    const smokeDate = smokedDate || new Date();
+
+    // Update the item
+    const updated = await prisma.humidorItem.update({
+      where: { id: itemId },
+      data: {
+        quantity: newQuantity,
+        smoked_count: newSmokedCount,
+        last_smoked_date: smokeDate,
+      },
+    });
+
+    return updated;
+  } catch (error) {
+    console.error('Error marking cigar as smoked:', error);
+    throw new Error('Failed to mark cigar as smoked');
+  }
+}
+
 export async function getHumidorStats(userId: string) {
   try {
     const items = await prisma.humidorItem.findMany({
       where: { user_id: userId },
     });
 
+    // Only count remaining cigars (not smoked)
     const totalCigars = items.reduce((sum, item) => sum + item.quantity, 0);
+    const totalSmoked = items.reduce((sum, item) => sum + item.smoked_count, 0);
     
     // Get unique cigar IDs to fetch pricing data
     const cigarIds = [...new Set(items.map(item => item.cigar_id))];
@@ -150,6 +195,7 @@ export async function getHumidorStats(userId: string) {
     );
     
     // Calculate total value using purchase price, or fallback to cigar's typical street price or MSRP
+    // Only count remaining cigars (not smoked)
     const totalValue = items.reduce((sum, item) => {
       const pricePerCigar = item.purchase_price_cents || cigarPriceMap.get(item.cigar_id) || 0;
       return sum + (pricePerCigar * item.quantity);
@@ -159,6 +205,7 @@ export async function getHumidorStats(userId: string) {
 
     return {
       totalCigars,
+      totalSmoked,
       uniqueCigars,
       totalValue,
       totalItems: items.length,
@@ -167,6 +214,7 @@ export async function getHumidorStats(userId: string) {
     console.error('Error fetching humidor stats:', error);
     return {
       totalCigars: 0,
+      totalSmoked: 0,
       uniqueCigars: 0,
       totalValue: 0,
       totalItems: 0,

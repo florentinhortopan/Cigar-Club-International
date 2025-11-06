@@ -19,6 +19,20 @@ export async function GET() {
     // Get total cigars in the club
     const totalCigarsInClub = await prisma.cigar.count();
 
+    // Calculate total value of all club cigars
+    // Use typical_street_cents if available, otherwise fallback to msrp_cents
+    const allCigars = await prisma.cigar.findMany({
+      select: {
+        typical_street_cents: true,
+        msrp_cents: true,
+      },
+    });
+
+    const totalClubValue = allCigars.reduce((sum, cigar) => {
+      const price = cigar.typical_street_cents || cigar.msrp_cents || 0;
+      return sum + price;
+    }, 0);
+
     // Get user's humidor stats
     const humidorStats = await getHumidorStats(userId);
 
@@ -33,6 +47,8 @@ export async function GET() {
       stats: {
         // Total cigars in the club (all users)
         totalCigarsInClub,
+        // Total value of all club cigars
+        totalClubValue,
         // User's personal humidor stats
         humidorCigars: humidorStats.totalCigars,
         humidorValue: humidorStats.totalValue,
