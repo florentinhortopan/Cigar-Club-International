@@ -77,7 +77,7 @@ function VerifyRequestContent() {
               <div>
                 <p className="font-medium">Check your inbox</p>
                 <p className="text-sm text-muted-foreground">
-                  Look for an email from Humidor Club
+                  Look for an email from Cigar Club International
                 </p>
               </div>
             </div>

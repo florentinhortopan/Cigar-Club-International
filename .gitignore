@@ -1,0 +1,3 @@
+# Files containing sensitive information (passwords, connection strings, etc.)
+FIX_PREPARED_STATEMENT_ERROR.md
+

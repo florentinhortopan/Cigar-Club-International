@@ -8,7 +8,7 @@ export default function DashboardPage() {
       <div>
         <h1 className="text-3xl font-bold">Dashboard</h1>
         <p className="text-muted-foreground mt-2">
-          Welcome back to Humidor Club
+          Welcome back to Cigar Club International
         </p>
       </div>
 

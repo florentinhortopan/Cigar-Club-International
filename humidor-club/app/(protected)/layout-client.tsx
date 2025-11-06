@@ -47,7 +47,7 @@ export function ProtectedLayoutClient({ children }: ProtectedLayoutClientProps) 
                 />
               </svg>
             </div>
-            <span className="font-semibold">Humidor Club</span>
+            <span className="font-semibold">Cigar Club International</span>
           </div>
         </div>
       </header>

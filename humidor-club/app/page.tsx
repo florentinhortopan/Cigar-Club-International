@@ -15,7 +15,7 @@ export default function LandingPage() {
           {/* Heading */}
           <div className="space-y-4 max-w-3xl">
             <h1 className="text-4xl md:text-6xl font-bold tracking-tight">
-              Welcome to <span className="text-primary">Humidor Club</span>
+              Welcome to <span className="text-primary">Cigar Club International</span>
             </h1>
             <p className="text-xl md:text-2xl text-muted-foreground">
               A private community for cigar enthusiasts to collect, rate, and trade premium cigars
@@ -93,7 +93,7 @@ export default function LandingPage() {
         <div className="container mx-auto px-4 py-8">
           <div className="flex flex-col md:flex-row justify-between items-center gap-4">
             <p className="text-sm text-muted-foreground">
-              © 2025 Humidor Club. All rights reserved.
+              © 2025 Cigar Club International. All rights reserved.
             </p>
             <div className="flex gap-6 text-sm">
               <Link href="/privacy" className="text-muted-foreground hover:text-foreground">

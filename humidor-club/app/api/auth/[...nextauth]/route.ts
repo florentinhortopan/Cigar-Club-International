@@ -75,7 +75,7 @@ export const authOptions: NextAuthOptions = {
                       await resend.emails.send({
               from: process.env.EMAIL_FROM || 'noreply@humidor.club',
               to: email,
-              subject: 'Sign in to Humidor Club',
+              subject: 'Sign in to Cigar Club International',
               html: `
               <!DOCTYPE html>
               <html>
@@ -85,14 +85,14 @@ export const authOptions: NextAuthOptions = {
                 </head>
                 <body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
                   <div style="background: linear-gradient(135deg, #f97316 0%, #ea580c 100%); padding: 30px; border-radius: 10px 10px 0 0; text-align: center;">
-                    <h1 style="color: white; margin: 0; font-size: 28px;">🥃 Humidor Club</h1>
+                    <h1 style="color: white; margin: 0; font-size: 28px;">🥃 Cigar Club International</h1>
                   </div>
                   
                   <div style="background: white; padding: 40px; border: 1px solid #e5e7eb; border-top: none; border-radius: 0 0 10px 10px;">
                     <h2 style="margin-top: 0; color: #111827;">Sign in to your account</h2>
                     
                     <p style="color: #6b7280; font-size: 16px;">
-                      Click the button below to securely sign in to Humidor Club:
+                      Click the button below to securely sign in to Cigar Club International:
                     </p>
                     
                     <div style="text-align: center; margin: 30px 0;">
@@ -113,7 +113,7 @@ export const authOptions: NextAuthOptions = {
                   </div>
                   
                   <div style="text-align: center; margin-top: 20px; color: #9ca3af; font-size: 12px;">
-                    <p>© 2025 Humidor Club. All rights reserved.</p>
+                    <p>© 2025 Cigar Club International. All rights reserved.</p>
                   </div>
                 </body>
               </html>

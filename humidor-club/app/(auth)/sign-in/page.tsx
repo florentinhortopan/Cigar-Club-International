@@ -56,7 +56,7 @@ export default function SignInPage() {
           <div>
             <h1 className="text-3xl font-bold">Welcome Back</h1>
             <p className="text-muted-foreground mt-2">
-              Sign in to your Humidor Club account
+              Sign in to your Cigar Club International account
             </p>
           </div>
         </div>
