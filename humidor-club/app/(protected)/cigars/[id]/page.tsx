@@ -142,7 +142,7 @@ export default async function CigarDetailPage({ params }: CigarPageProps) {
             <h3 className="text-lg font-semibold mb-4">Quick Actions</h3>
             <div className="space-y-3">
               <Link
-                href={`/cigars/${id}/edit`}
+                href={`/cigars/${cigarId}/edit`}
                 className="flex w-full items-center justify-center rounded-lg border px-4 py-2 font-semibold hover:bg-muted"
               >
                 Edit this cigar
