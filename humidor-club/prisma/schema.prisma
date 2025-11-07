@@ -158,8 +158,9 @@ model Cigar {
   created_at           DateTime @default(now())
   updated_at           DateTime @updatedAt
 
-  line     Line      @relation(fields: [line_id], references: [id], onDelete: Cascade)
-  releases Release[]
+  line          Line          @relation(fields: [line_id], references: [id], onDelete: Cascade)
+  releases      Release[]
+  humidorItems  HumidorItem[]
 
   @@index([line_id])
 }
@@ -201,8 +202,7 @@ model HumidorItem {
   created_at           DateTime  @default(now())
   updated_at           DateTime  @updatedAt
 
-  // Relations (using User email as identifier since we have NextAuth User)
-  // Note: We'll link via user email from NextAuth session
+  cigar Cigar @relation(fields: [cigar_id], references: [id], onDelete: Cascade)
 
   @@index([user_id])
   @@index([cigar_id])
