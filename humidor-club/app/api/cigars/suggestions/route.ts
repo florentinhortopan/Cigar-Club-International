@@ -48,7 +48,7 @@ export async function GET(request: NextRequest) {
       } as Prisma.CigarWhereInput);
     }
 
-    const results = await prisma.cigar.findMany({
+    const rawResults = await prisma.cigar.findMany({
       where: { AND: whereClauses },
       select: {
         [fieldConfig.column]: true,
@@ -60,9 +60,14 @@ export async function GET(request: NextRequest) {
       take: 25,
     } as Prisma.CigarFindManyArgs);
 
+    const results = rawResults as unknown as Array<Record<string, string | null>>;
+
     const suggestions = results
-      .map((item) => item[fieldConfig.column] as string | null)
-      .filter((value): value is string => typeof value === 'string' && value.length > 0);
+      .map((item) => {
+        const value = item[fieldConfig.column as string];
+        return typeof value === 'string' && value.trim().length > 0 ? value : null;
+      })
+      .filter((value): value is string => value !== null);
 
     return NextResponse.json({
       success: true,

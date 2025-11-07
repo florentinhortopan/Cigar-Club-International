@@ -361,3 +361,185 @@ export async function createRelease(data: {
   }
 }
 
+// =============================================================================
+// PAIRINGS & ACTIVITIES
+// =============================================================================
+
+export type PairingKind = 'CIGAR' | 'FOOD' | 'DRINK' | 'EVENT' | 'STYLE';
+
+export interface Pairing {
+  id: string;
+  cigar_id: string;
+  user_id: string;
+  kind: PairingKind;
+  description: string;
+  image_url?: string | null;
+  created_at: Date;
+  updated_at: Date;
+  author?: {
+    id: string;
+    name: string | null;
+    image: string | null;
+    branch?: {
+      id: string;
+      name: string;
+      city?: string | null;
+      region?: string | null;
+      country?: string | null;
+    } | null;
+  };
+}
+
+export interface CreatePairingInput {
+  cigarId: string;
+  userId: string;
+  kind: PairingKind;
+  description: string;
+  imageUrl?: string;
+}
+
+export async function getPairingsByCigar(cigarId: string): Promise<Pairing[]> {
+  try {
+    const pairings = await prisma.pairing.findMany({
+      where: { cigar_id: cigarId },
+      orderBy: { created_at: 'desc' },
+      include: {
+        author: {
+          select: {
+            id: true,
+            name: true,
+            image: true,
+            branch: {
+              select: {
+                id: true,
+                name: true,
+                city: true,
+                region: true,
+                country: true,
+              },
+            },
+          },
+        },
+      },
+    });
+
+    return pairings as Pairing[];
+  } catch (error) {
+    console.error('Error fetching pairings:', error);
+    throw new Error('Failed to fetch pairings');
+  }
+}
+
+export async function createPairing(data: CreatePairingInput): Promise<Pairing> {
+  try {
+    const result = await prisma.$transaction(async (tx) => {
+      const pairing = await tx.pairing.create({
+        data: {
+          cigar_id: data.cigarId,
+          user_id: data.userId,
+          kind: data.kind,
+          description: data.description,
+          image_url: data.imageUrl ?? null,
+        },
+        include: {
+          author: {
+            select: {
+              id: true,
+              name: true,
+              image: true,
+              branch: {
+                select: {
+                  id: true,
+                  name: true,
+                  city: true,
+                  region: true,
+                  country: true,
+                },
+              },
+            },
+          },
+          cigar: {
+            select: {
+              id: true,
+              vitola: true,
+              line: {
+                select: {
+                  name: true,
+                  brand: {
+                    select: {
+                      name: true,
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      });
+
+      const cigarBrand = pairing.cigar?.line?.brand?.name;
+      const cigarLine = pairing.cigar?.line?.name;
+      const cigarVitola = pairing.cigar?.vitola;
+      const pairingLabel = data.kind.toLowerCase();
+      const summaryParts = [
+        `Shared a ${pairingLabel} pairing`,
+        cigarBrand || cigarLine || cigarVitola ? 'for' : null,
+        cigarBrand,
+        cigarLine,
+        cigarVitola ? `(${cigarVitola})` : null,
+      ].filter(Boolean);
+
+      await tx.activity.create({
+        data: {
+          user_id: data.userId,
+          type: 'PAIRING_CREATED',
+          summary: summaryParts.join(' '),
+          reference_type: 'PAIRING',
+          reference_id: pairing.id,
+          metadata: {
+            cigar_id: pairing.cigar_id,
+            cigar_brand: cigarBrand,
+            cigar_line: cigarLine,
+            cigar_vitola: cigarVitola,
+            pairing_kind: data.kind,
+          },
+        },
+      });
+
+      const { cigar: _cigar, ...pairingWithoutCigar } = pairing;
+      return pairingWithoutCigar;
+    });
+
+    return result as Pairing;
+  } catch (error) {
+    console.error('Error creating pairing:', error);
+    throw new Error('Failed to create pairing');
+  }
+}
+
+export interface Activity {
+  id: string;
+  user_id: string;
+  type: 'PAIRING_CREATED';
+  summary: string;
+  reference_type?: string | null;
+  reference_id?: string | null;
+  metadata?: Record<string, unknown>;
+  created_at: Date;
+}
+
+export async function getRecentActivityForUser(userId: string, limit: number = 20): Promise<Activity[]> {
+  try {
+    const activities = await prisma.activity.findMany({
+      where: { user_id: userId },
+      orderBy: { created_at: 'desc' },
+      take: limit,
+    });
+
+    return activities as Activity[];
+  } catch (error) {
+    console.error('Error fetching activity:', error);
+    throw new Error('Failed to fetch activity');
+  }
+}
+

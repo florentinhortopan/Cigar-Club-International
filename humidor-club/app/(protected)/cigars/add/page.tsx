@@ -1,201 +1,3 @@
-  const handleVitolaChange = (value: string) =>
-    debounceFieldSuggestions(
-      'vitola',
-      value,
-      setVitola,
-      setVitolaSuggestions,
-      setShowVitolaSuggestions,
-      vitolaSearchTimeoutRef
-    );
-
-  const handleCountryChange = (value: string) =>
-    debounceFieldSuggestions(
-      'country',
-      value,
-      setCountry,
-      setCountrySuggestions,
-      setShowCountrySuggestions,
-      countrySearchTimeoutRef
-    );
-
-  const handleWrapperChange = (value: string) =>
-    debounceFieldSuggestions(
-      'wrapper',
-      value,
-      setWrapper,
-      setWrapperSuggestions,
-      setShowWrapperSuggestions,
-      wrapperSearchTimeoutRef
-    );
-
-  const handleBinderChange = (value: string) =>
-    debounceFieldSuggestions(
-      'binder',
-      value,
-      setBinder,
-      setBinderSuggestions,
-      setShowBinderSuggestions,
-      binderSearchTimeoutRef
-    );
-
-  const handleFillerChange = (value: string) =>
-    debounceFieldSuggestions(
-      'filler',
-      value,
-      setFiller,
-      setFillerSuggestions,
-      setShowFillerSuggestions,
-      fillerSearchTimeoutRef
-    );
-  const fetchCigarFieldSuggestions = async (field: string, query: string) => {
-    try {
-      const url = `/api/cigars/suggestions?field=${encodeURIComponent(field)}${
-        query ? `&search=${encodeURIComponent(query)}` : ''
-      }`;
-      const response = await fetch(url);
-      const data = await response.json();
-      if (!response.ok || !data.success) {
-        throw new Error(data.error || 'Failed to fetch suggestions');
-      }
-      return (data.suggestions || []) as string[];
-    } catch (error) {
-      console.error(`❌ Error fetching ${field} suggestions:`, error);
-      return [];
-    }
-  };
-
-  const debounceFieldSuggestions = (
-    field: string,
-    value: string,
-    setter: (value: string) => void,
-    setSuggestions: (options: string[]) => void,
-    setShow: (open: boolean) => void,
-    timeoutRef: MutableRefObject<NodeJS.Timeout | null>
-  ) => {
-    setter(value);
-    if (timeoutRef.current) {
-      clearTimeout(timeoutRef.current);
-    }
-    timeoutRef.current = setTimeout(async () => {
-      const results = await fetchCigarFieldSuggestions(field, value);
-      setSuggestions(results);
-      setShow(true);
-    }, 200);
-  };
-  const handleBrandInputChange = (value: string) => {
-    setBrandInput(value);
-    setSelectedBrandId('');
-    if (brandSearchTimeoutRef.current) {
-      clearTimeout(brandSearchTimeoutRef.current);
-    }
-    brandSearchTimeoutRef.current = setTimeout(() => {
-      fetchBrandSuggestions(value);
-    }, 200);
-    setShowBrandSuggestions(true);
-  };
-
-  const handleSelectBrand = (option: AutocompleteOption) => {
-    if (!option.id) return;
-    setSelectedBrandId(option.id);
-    setBrandInput(option.label);
-    setShowBrandSuggestions(false);
-    setSelectedLineId('');
-    setLineInput('');
-    fetchLineSuggestions(option.id);
-  };
-
-  const handleCreateBrand = async (name: string) => {
-    if (!name.trim() || creatingBrand) return;
-    try {
-      setCreatingBrand(true);
-      const response = await fetch('/api/brands', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name }),
-      });
-
-      const data = await response.json();
-      if (!response.ok || !data.success) {
-        throw new Error(data.error || 'Failed to create brand');
-      }
-
-      const brand: Brand = data.brand;
-      setBrands((prev) => [brand, ...prev]);
-      setBrandSuggestions((prev) => [
-        { id: brand.id, label: brand.name, description: brand.country ? `Country: ${brand.country}` : undefined },
-        ...prev,
-      ]);
-      setSelectedBrandId(brand.id);
-      setBrandInput(brand.name);
-      setShowBrandSuggestions(false);
-      setSelectedLineId('');
-      setLineInput('');
-      fetchLineSuggestions(brand.id);
-    } catch (error) {
-      console.error('❌ Error creating brand:', error);
-      alert(error instanceof Error ? error.message : 'Failed to create brand');
-    } finally {
-      setCreatingBrand(false);
-    }
-  };
-
-  const handleLineInputChange = (value: string) => {
-    setLineInput(value);
-    setSelectedLineId('');
-    if (!selectedBrandId) {
-      setShowLineSuggestions(false);
-      return;
-    }
-    if (lineSearchTimeoutRef.current) {
-      clearTimeout(lineSearchTimeoutRef.current);
-    }
-    lineSearchTimeoutRef.current = setTimeout(() => {
-      fetchLineSuggestions(selectedBrandId, value);
-    }, 200);
-    setShowLineSuggestions(true);
-  };
-
-  const handleSelectLine = (option: AutocompleteOption) => {
-    if (!option.id) return;
-    setSelectedLineId(option.id);
-    setLineInput(option.label);
-    setShowLineSuggestions(false);
-  };
-
-  const handleCreateLine = async (name: string) => {
-    if (!selectedBrandId) {
-      alert('Select or create a brand before adding a line.');
-      return;
-    }
-    if (!name.trim() || creatingLine) return;
-    try {
-      setCreatingLine(true);
-      const response = await fetch('/api/lines', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, brandId: selectedBrandId }),
-      });
-
-      const data = await response.json();
-      if (!response.ok || !data.success) {
-        throw new Error(data.error || 'Failed to create line');
-      }
-
-      const line: Line = data.line;
-      setLineSuggestions((prev) => [
-        { id: line.id, label: line.name },
-        ...prev,
-      ]);
-      setSelectedLineId(line.id);
-      setLineInput(line.name);
-      setShowLineSuggestions(false);
-    } catch (error) {
-      console.error('❌ Error creating line:', error);
-      alert(error instanceof Error ? error.message : 'Failed to create line');
-    } finally {
-      setCreatingLine(false);
-    }
-  };
 'use client';
 
 import { useState, useEffect, useRef, type MutableRefObject } from 'react';
@@ -366,6 +168,210 @@ export default function AddCigarPage() {
       setLoadingLines(false);
     }
   };
+
+  const fetchCigarFieldSuggestions = async (field: string, query: string) => {
+    try {
+      const url = `/api/cigars/suggestions?field=${encodeURIComponent(field)}${
+        query ? `&search=${encodeURIComponent(query)}` : ''
+      }`;
+      const response = await fetch(url);
+      const data = await response.json();
+      if (!response.ok || !data.success) {
+        throw new Error(data.error || 'Failed to fetch suggestions');
+      }
+      return (data.suggestions || []) as string[];
+    } catch (error) {
+      console.error(`❌ Error fetching ${field} suggestions:`, error);
+      return [];
+    }
+  };
+
+  const debounceFieldSuggestions = (
+    field: string,
+    value: string,
+    setter: (value: string) => void,
+    setSuggestions: (options: string[]) => void,
+    setShow: (open: boolean) => void,
+    timeoutRef: MutableRefObject<NodeJS.Timeout | null>
+  ) => {
+    setter(value);
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+    }
+    timeoutRef.current = setTimeout(async () => {
+      const results = await fetchCigarFieldSuggestions(field, value);
+      setSuggestions(results);
+      setShow(true);
+    }, 200);
+  };
+
+  const handleBrandInputChange = (value: string) => {
+    setBrandInput(value);
+    setSelectedBrandId('');
+    if (brandSearchTimeoutRef.current) {
+      clearTimeout(brandSearchTimeoutRef.current);
+    }
+    brandSearchTimeoutRef.current = setTimeout(() => {
+      fetchBrandSuggestions(value);
+    }, 200);
+    setShowBrandSuggestions(true);
+  };
+
+  const handleSelectBrand = (option: AutocompleteOption) => {
+    if (!option.id) return;
+    setSelectedBrandId(option.id);
+    setBrandInput(option.label);
+    setShowBrandSuggestions(false);
+    setSelectedLineId('');
+    setLineInput('');
+    fetchLineSuggestions(option.id);
+  };
+
+  const handleCreateBrand = async (name: string) => {
+    if (!name.trim() || creatingBrand) return;
+    try {
+      setCreatingBrand(true);
+      const response = await fetch('/api/brands', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name }),
+      });
+
+      const data = await response.json();
+      if (!response.ok || !data.success) {
+        throw new Error(data.error || 'Failed to create brand');
+      }
+
+      const brand: Brand = data.brand;
+      setBrandSuggestions((prev) => [
+        {
+          id: brand.id,
+          label: brand.name,
+          description: brand.country ? `Country: ${brand.country}` : undefined,
+        },
+        ...prev,
+      ]);
+      setSelectedBrandId(brand.id);
+      setBrandInput(brand.name);
+      setShowBrandSuggestions(false);
+      setSelectedLineId('');
+      setLineInput('');
+      fetchLineSuggestions(brand.id);
+    } catch (error) {
+      console.error('❌ Error creating brand:', error);
+      alert(error instanceof Error ? error.message : 'Failed to create brand');
+    } finally {
+      setCreatingBrand(false);
+    }
+  };
+
+  const handleLineInputChange = (value: string) => {
+    setLineInput(value);
+    setSelectedLineId('');
+    if (!selectedBrandId) {
+      setShowLineSuggestions(false);
+      return;
+    }
+    if (lineSearchTimeoutRef.current) {
+      clearTimeout(lineSearchTimeoutRef.current);
+    }
+    lineSearchTimeoutRef.current = setTimeout(() => {
+      fetchLineSuggestions(selectedBrandId, value);
+    }, 200);
+    setShowLineSuggestions(true);
+  };
+
+  const handleSelectLine = (option: AutocompleteOption) => {
+    if (!option.id) return;
+    setSelectedLineId(option.id);
+    setLineInput(option.label);
+    setShowLineSuggestions(false);
+  };
+
+  const handleCreateLine = async (name: string) => {
+    if (!selectedBrandId) {
+      alert('Select or create a brand before adding a line.');
+      return;
+    }
+    if (!name.trim() || creatingLine) return;
+    try {
+      setCreatingLine(true);
+      const response = await fetch('/api/lines', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, brandId: selectedBrandId }),
+      });
+
+      const data = await response.json();
+      if (!response.ok || !data.success) {
+        throw new Error(data.error || 'Failed to create line');
+      }
+
+      const line: Line = data.line;
+      setLineSuggestions((prev) => [
+        { id: line.id, label: line.name },
+        ...prev,
+      ]);
+      setSelectedLineId(line.id);
+      setLineInput(line.name);
+      setShowLineSuggestions(false);
+    } catch (error) {
+      console.error('❌ Error creating line:', error);
+      alert(error instanceof Error ? error.message : 'Failed to create line');
+    } finally {
+      setCreatingLine(false);
+    }
+  };
+
+  const handleVitolaChange = (value: string) =>
+    debounceFieldSuggestions(
+      'vitola',
+      value,
+      setVitola,
+      setVitolaSuggestions,
+      setShowVitolaSuggestions,
+      vitolaSearchTimeoutRef
+    );
+
+  const handleCountryChange = (value: string) =>
+    debounceFieldSuggestions(
+      'country',
+      value,
+      setCountry,
+      setCountrySuggestions,
+      setShowCountrySuggestions,
+      countrySearchTimeoutRef
+    );
+
+  const handleWrapperChange = (value: string) =>
+    debounceFieldSuggestions(
+      'wrapper',
+      value,
+      setWrapper,
+      setWrapperSuggestions,
+      setShowWrapperSuggestions,
+      wrapperSearchTimeoutRef
+    );
+
+  const handleBinderChange = (value: string) =>
+    debounceFieldSuggestions(
+      'binder',
+      value,
+      setBinder,
+      setBinderSuggestions,
+      setShowBinderSuggestions,
+      binderSearchTimeoutRef
+    );
+
+  const handleFillerChange = (value: string) =>
+    debounceFieldSuggestions(
+      'filler',
+      value,
+      setFiller,
+      setFillerSuggestions,
+      setShowFillerSuggestions,
+      fillerSearchTimeoutRef
+    );
 
   const handleImageUpload = async (files: FileList) => {
     setUploadingImages(true);

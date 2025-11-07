@@ -2,6 +2,7 @@ import { Award, History, User } from 'lucide-react';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/app/api/auth/[...nextauth]/route';
 import { prisma } from '@/lib/prisma';
+import { getRecentActivityForUser } from '@/lib/prisma-queries';
 import BranchSection from './branch-section';
 import ProfileEditor from './profile-editor';
 
@@ -13,6 +14,8 @@ export default async function ProfilePage() {
     let userBranchId: string | null = null;
     let userProfile = null;
     
+    let activities: Awaited<ReturnType<typeof getRecentActivityForUser>> = [];
+
     if (session?.user?.id) {
       try {
         const user = await prisma.user.findUnique({
@@ -40,6 +43,8 @@ export default async function ProfilePage() {
             createdAt: new Date().toISOString(), // Fallback - User model doesn't have createdAt field
           };
         }
+
+        activities = await getRecentActivityForUser(session.user.id, 10);
       } catch (dbError) {
         console.error('Error fetching user from database:', dbError);
         // Continue with null userProfile to show error message
@@ -60,7 +65,7 @@ export default async function ProfilePage() {
       );
     }
 
-  return (
+    return (
     <div className="space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
@@ -92,7 +97,7 @@ export default async function ProfilePage() {
             </div>
             <h3 className="font-semibold">Activity</h3>
           </div>
-          <p className="text-2xl font-bold">0</p>
+          <p className="text-2xl font-bold">{activities.length}</p>
           <p className="text-sm text-muted-foreground mt-1">Recent actions</p>
         </div>
 
@@ -112,11 +117,24 @@ export default async function ProfilePage() {
       <BranchSection userBranchId={userBranchId} />
 
       {/* Recent Activity */}
-      <div className="bg-card border rounded-xl p-6">
-        <h3 className="text-lg font-semibold mb-4">Recent Activity</h3>
-        <div className="text-center py-8 text-muted-foreground">
-          <p>No recent activity</p>
-        </div>
+      <div className="bg-card border rounded-xl p-6 space-y-4">
+        <h3 className="text-lg font-semibold">Recent Activity</h3>
+        {activities.length === 0 ? (
+          <div className="text-center py-8 text-muted-foreground">
+            <p>No recent activity</p>
+          </div>
+        ) : (
+          <ul className="space-y-3">
+            {activities.map((activity) => (
+              <li key={activity.id} className="rounded-lg border bg-muted/40 p-4">
+                <p className="font-medium text-foreground">{activity.summary}</p>
+                <p className="text-xs text-muted-foreground mt-2">
+                  {new Date(activity.created_at).toLocaleString()}
+                </p>
+              </li>
+            ))}
+          </ul>
+        )}
       </div>
     </div>
   );

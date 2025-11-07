@@ -1,9 +1,10 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Search, User, Mail, Package, MapPin, Users } from 'lucide-react';
-import Link from 'next/link';
 import Image from 'next/image';
+import Link from 'next/link';
+import { useRouter, useSearchParams } from 'next/navigation';
 
 interface UserProfile {
   id: string;
@@ -50,6 +51,8 @@ export default function PeoplePage() {
   const [selectedUser, setSelectedUser] = useState<UserProfile | null>(null);
   const [userHumidor, setUserHumidor] = useState<UserHumidor | null>(null);
   const [loadingHumidor, setLoadingHumidor] = useState(false);
+  const router = useRouter();
+  const searchParams = useSearchParams();
 
   useEffect(() => {
     fetchUsers();
@@ -107,8 +110,68 @@ export default function PeoplePage() {
     }
   };
 
+  const fetchUserProfile = useCallback(async (userId: string) => {
+    try {
+      const response = await fetch(`/api/users/${userId}`);
+      const data = await response.json();
+      if (data.success && data.user) {
+        setSelectedUser(data.user);
+      }
+    } catch (error) {
+      console.error('Error fetching user profile:', error);
+    }
+  }, []);
+
+  useEffect(() => {
+    const userIdParam = searchParams.get('userId');
+    if (!userIdParam) {
+      if (selectedUser) {
+        setSelectedUser(null);
+        setUserHumidor(null);
+      }
+      return;
+    }
+
+    if (selectedUser?.id === userIdParam) {
+      return;
+    }
+
+    const existingUser = users.find((user) => user.id === userIdParam);
+    if (existingUser) {
+      setSelectedUser(existingUser);
+      return;
+    }
+
+    void fetchUserProfile(userIdParam);
+  }, [searchParams, users, selectedUser, fetchUserProfile]);
+
   const formatPrice = (cents: number) => {
     return `$${(cents / 100).toFixed(2)}`;
+  };
+
+  const updateQueryString = useCallback(
+    (updater: (params: URLSearchParams) => void) => {
+      const params = new URLSearchParams(searchParams);
+      updater(params);
+      const queryString = params.toString();
+      router.replace(queryString ? `/people?${queryString}` : '/people', { scroll: false });
+    },
+    [router, searchParams]
+  );
+
+  const handleSelectUser = (user: UserProfile) => {
+    setSelectedUser(user);
+    updateQueryString((params) => {
+      params.set('userId', user.id);
+    });
+  };
+
+  const handleCloseUser = () => {
+    setSelectedUser(null);
+    setUserHumidor(null);
+    updateQueryString((params) => {
+      params.delete('userId');
+    });
   };
 
   return (
@@ -151,7 +214,7 @@ export default function PeoplePage() {
             <div
               key={user.id}
               className="bg-card border rounded-xl p-6 hover:shadow-md transition-shadow cursor-pointer"
-              onClick={() => setSelectedUser(user)}
+              onClick={() => handleSelectUser(user)}
             >
               <div className="flex items-start gap-4">
                 {/* Avatar */}
@@ -211,10 +274,7 @@ export default function PeoplePage() {
                 {selectedUser.name || 'Member'}'s Profile
               </h2>
               <button
-                onClick={() => {
-                  setSelectedUser(null);
-                  setUserHumidor(null);
-                }}
+                onClick={handleCloseUser}
                 className="text-muted-foreground hover:text-foreground"
               >
                 ✕

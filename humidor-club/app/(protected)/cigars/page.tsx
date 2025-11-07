@@ -276,6 +276,13 @@ export default function CigarsPage() {
                           </p>
                         )}
                       </div>
+
+                      <Link
+                        href={`/cigars/${cigar.id}`}
+                        className="mt-4 inline-flex h-10 items-center justify-center rounded-lg border px-3 text-sm font-medium text-foreground transition-colors hover:bg-muted"
+                      >
+                        View details
+                      </Link>
                     </div>
                   </div>
                 );
@@ -343,6 +350,15 @@ export default function CigarsPage() {
                           {formatPrice(cigar.msrp_cents) || '—'}
                         </Detail>
                       </div>
+
+                      <div className="flex flex-wrap gap-2">
+                        <Link
+                          href={`/cigars/${cigar.id}`}
+                          className="inline-flex h-10 items-center justify-center rounded-lg border px-3 text-sm font-medium text-foreground transition-colors hover:bg-muted"
+                        >
+                          View details
+                        </Link>
+                      </div>
                     </div>
                   </div>
                 );
@@ -403,6 +419,12 @@ export default function CigarsPage() {
                           toggleHumidor={toggleHumidor}
                           variant="compact"
                         />
+                        <Link
+                          href={`/cigars/${cigar.id}`}
+                          className="inline-flex items-center gap-1 rounded-md border px-2 py-1 text-xs font-medium text-foreground transition-colors hover:bg-muted"
+                        >
+                          View
+                        </Link>
                       </div>
                     </div>
                   </div>

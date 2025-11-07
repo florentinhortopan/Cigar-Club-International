@@ -52,6 +52,8 @@ model User {
   accounts         Account[]
   sessions         Session[]
   created_branches Branch[]  @relation("BranchCreator") // Branches created by this user
+  pairings         Pairing[]
+  activities       Activity[]
 
   @@index([branch_id])
 }
@@ -161,6 +163,7 @@ model Cigar {
   line          Line          @relation(fields: [line_id], references: [id], onDelete: Cascade)
   releases      Release[]
   humidorItems  HumidorItem[]
+  pairings      Pairing[]
 
   @@index([line_id])
 }
@@ -207,4 +210,51 @@ model HumidorItem {
   @@index([user_id])
   @@index([cigar_id])
   @@index([last_smoked_date])
+}
+
+enum PairingKind {
+  CIGAR
+  FOOD
+  DRINK
+  EVENT
+  STYLE
+}
+
+model Pairing {
+  id          String      @id @default(cuid())
+  cigar_id    String
+  user_id     String
+  kind        PairingKind
+  description String      @db.Text
+  image_url   String?
+  created_at  DateTime    @default(now())
+  updated_at  DateTime    @updatedAt
+
+  cigar Cigar @relation(fields: [cigar_id], references: [id], onDelete: Cascade)
+  author User @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@index([cigar_id])
+  @@index([user_id])
+  @@index([created_at])
+}
+
+enum ActivityType {
+  PAIRING_CREATED
+}
+
+model Activity {
+  id             String        @id @default(cuid())
+  user_id        String
+  type           ActivityType
+  summary        String
+  reference_type String?
+  reference_id   String?
+  metadata       Json?
+  created_at     DateTime      @default(now())
+
+  user User @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@index([user_id])
+  @@index([created_at])
+  @@index([type])
 }
