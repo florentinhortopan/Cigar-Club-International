@@ -6,49 +6,59 @@ import BranchSection from './branch-section';
 import ProfileEditor from './profile-editor';
 
 export default async function ProfilePage() {
-  const session = await getServerSession(authOptions);
-  
-  // Get user with branch info and profile data
-  let userBranchId: string | null = null;
-  let userProfile = null;
-  
-  if (session?.user?.id) {
-    const user = await prisma.user.findUnique({
-      where: { id: session.user.id },
-      select: {
-        id: true,
-        name: true,
-        email: true,
-        image: true,
-        emailVerified: true,
-        branch_id: true,
-      },
-    });
-    userBranchId = user?.branch_id || null;
-    if (user) {
-      // User model doesn't have createdAt, so we'll use a fallback
-      // In the future, we could add createdAt to the User model
-      userProfile = {
-        id: user.id,
-        name: user.name,
-        email: user.email,
-        image: user.image,
-        emailVerified: user.emailVerified,
-        createdAt: new Date(), // Fallback - User model doesn't have createdAt field
-      };
+  try {
+    const session = await getServerSession(authOptions);
+    
+    // Get user with branch info and profile data
+    let userBranchId: string | null = null;
+    let userProfile = null;
+    
+    if (session?.user?.id) {
+      try {
+        const user = await prisma.user.findUnique({
+          where: { id: session.user.id },
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            image: true,
+            emailVerified: true,
+            branch_id: true,
+          },
+        });
+        userBranchId = user?.branch_id || null;
+        if (user) {
+          // User model doesn't have createdAt, so we'll use a fallback
+          // In the future, we could add createdAt to the User model
+          // Convert dates to ISO strings for client component serialization
+          userProfile = {
+            id: user.id,
+            name: user.name,
+            email: user.email,
+            image: user.image,
+            emailVerified: user.emailVerified ? user.emailVerified.toISOString() : null,
+            createdAt: new Date().toISOString(), // Fallback - User model doesn't have createdAt field
+          };
+        }
+      } catch (dbError) {
+        console.error('Error fetching user from database:', dbError);
+        // Continue with null userProfile to show error message
+      }
     }
-  }
 
-  if (!userProfile) {
-    return (
-      <div className="space-y-6">
-        <h1 className="text-3xl font-bold">Profile</h1>
-        <div className="bg-card border rounded-xl p-6 text-center">
-          <p className="text-muted-foreground">Unable to load profile</p>
+    if (!userProfile) {
+      return (
+        <div className="space-y-6">
+          <h1 className="text-3xl font-bold">Profile</h1>
+          <div className="bg-card border rounded-xl p-6 text-center">
+            <p className="text-muted-foreground">Unable to load profile</p>
+            <p className="text-sm text-muted-foreground mt-2">
+              Please try refreshing the page or contact support if the issue persists.
+            </p>
+          </div>
         </div>
-      </div>
-    );
-  }
+      );
+    }
 
   return (
     <div className="space-y-6">
@@ -60,9 +70,6 @@ export default async function ProfilePage() {
       {/* Profile Editor */}
       <ProfileEditor 
         user={userProfile} 
-        onUpdate={() => {
-          // Profile will refresh on next page load
-        }}
       />
 
       {/* Stats Grid */}
@@ -113,5 +120,19 @@ export default async function ProfilePage() {
       </div>
     </div>
   );
+  } catch (error) {
+    console.error('Error in ProfilePage:', error);
+    return (
+      <div className="space-y-6">
+        <h1 className="text-3xl font-bold">Profile</h1>
+        <div className="bg-card border rounded-xl p-6 text-center">
+          <p className="text-destructive font-semibold mb-2">Error loading profile</p>
+          <p className="text-sm text-muted-foreground">
+            An error occurred while loading your profile. Please try refreshing the page.
+          </p>
+        </div>
+      </div>
+    );
+  }
 }
 

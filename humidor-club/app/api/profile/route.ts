@@ -36,11 +36,13 @@ export async function GET() {
     }
 
     // Add createdAt fallback since User model doesn't have this field
+    // Convert dates to ISO strings for client serialization
     return NextResponse.json({
       success: true,
       user: {
         ...user,
-        createdAt: new Date(), // Fallback - User model doesn't have createdAt field
+        emailVerified: user.emailVerified ? user.emailVerified.toISOString() : null,
+        createdAt: new Date().toISOString(), // Fallback - User model doesn't have createdAt field
       },
     });
   } catch (error) {
@@ -89,11 +91,13 @@ export async function PATCH(request: NextRequest) {
     });
 
     // Add createdAt fallback since User model doesn't have this field
+    // Convert dates to ISO strings for client serialization
     return NextResponse.json({
       success: true,
       user: {
         ...updatedUser,
-        createdAt: new Date(), // Fallback - User model doesn't have createdAt field
+        emailVerified: updatedUser.emailVerified ? updatedUser.emailVerified.toISOString() : null,
+        createdAt: new Date().toISOString(), // Fallback - User model doesn't have createdAt field
       },
     });
   } catch (error: any) {

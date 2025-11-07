@@ -9,16 +9,15 @@ interface UserProfile {
   name: string | null;
   email: string | null;
   image: string | null;
-  emailVerified: Date | null;
-  createdAt: Date;
+  emailVerified: string | null; // ISO string for serialization
+  createdAt: string; // ISO string for serialization
 }
 
 interface ProfileEditorProps {
   user: UserProfile;
-  onUpdate: (updatedUser: UserProfile) => void;
 }
 
-export default function ProfileEditor({ user: initialUser, onUpdate }: ProfileEditorProps) {
+export default function ProfileEditor({ user: initialUser }: ProfileEditorProps) {
   const [user, setUser] = useState<UserProfile>(initialUser);
   const [name, setName] = useState(initialUser.name || '');
   const [image, setImage] = useState(initialUser.image);
@@ -114,7 +113,6 @@ export default function ProfileEditor({ user: initialUser, onUpdate }: ProfileEd
 
       if (data.success) {
         setUser(data.user);
-        onUpdate(data.user);
         // Refresh the page to show updated data
         window.location.reload();
       } else {
