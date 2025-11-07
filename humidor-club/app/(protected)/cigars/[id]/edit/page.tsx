@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, type MutableRefObject } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { ArrowLeft, Cigarette, Check, Upload, X, Image as ImageIcon, Loader2 } from 'lucide-react';
 import Link from 'next/link';
@@ -15,6 +15,12 @@ interface Brand {
 interface Line {
   id: string;
   name: string;
+}
+
+interface AutocompleteOption {
+  id?: string;
+  label: string;
+  description?: string;
 }
 
 interface Cigar {
@@ -51,14 +57,24 @@ export default function EditCigarPage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [step, setStep] = useState(1);
-  const [brands, setBrands] = useState<Brand[]>([]);
-  const [lines, setLines] = useState<Line[]>([]);
   const [loadingLines, setLoadingLines] = useState(false);
   const [cigar, setCigar] = useState<Cigar | null>(null);
 
   // Form data
-  const [selectedBrand, setSelectedBrand] = useState('');
-  const [selectedLine, setSelectedLine] = useState('');
+  const [brandInput, setBrandInput] = useState('');
+  const [selectedBrandId, setSelectedBrandId] = useState('');
+  const [brandSuggestions, setBrandSuggestions] = useState<AutocompleteOption[]>([]);
+  const [showBrandSuggestions, setShowBrandSuggestions] = useState(false);
+  const brandSearchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const [creatingBrand, setCreatingBrand] = useState(false);
+
+  const [lineInput, setLineInput] = useState('');
+  const [selectedLineId, setSelectedLineId] = useState('');
+  const [lineSuggestions, setLineSuggestions] = useState<AutocompleteOption[]>([]);
+  const [showLineSuggestions, setShowLineSuggestions] = useState(false);
+  const lineSearchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const [creatingLine, setCreatingLine] = useState(false);
+
   const [vitola, setVitola] = useState('');
   const [ringGauge, setRingGauge] = useState('');
   const [length, setLength] = useState('');
@@ -73,18 +89,201 @@ export default function EditCigarPage() {
   const [uploadingImages, setUploadingImages] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  useEffect(() => {
+    return () => {
+      if (brandSearchTimeoutRef.current) {
+        clearTimeout(brandSearchTimeoutRef.current);
+      }
+      if (lineSearchTimeoutRef.current) {
+        clearTimeout(lineSearchTimeoutRef.current);
+      }
+    };
+  }, []);
+
   // Load cigar data
   useEffect(() => {
     fetchCigar();
-    fetchBrands();
+    fetchBrandSuggestions();
   }, [cigarId]);
 
   // Load lines when brand changes
   useEffect(() => {
-    if (selectedBrand) {
-      fetchLines(selectedBrand);
+    if (selectedBrandId) {
+      fetchLineSuggestions(selectedBrandId);
     }
-  }, [selectedBrand]);
+  }, [selectedBrandId]);
+
+  const fetchBrandSuggestions = async (query: string = '') => {
+    try {
+      const url = query
+        ? `/api/brands?search=${encodeURIComponent(query)}`
+        : '/api/brands';
+      const response = await fetch(url);
+      const data = await response.json();
+
+      if (!response.ok || !data.success) {
+        throw new Error(data.error || 'Failed to load brands');
+      }
+
+      const options: AutocompleteOption[] = (data.brands || []).map((brand: Brand) => ({
+        id: brand.id,
+        label: brand.name,
+        description: brand.country ? `Country: ${brand.country}` : undefined,
+      }));
+
+      setBrandSuggestions(options);
+      if (query) {
+        setShowBrandSuggestions(true);
+      }
+    } catch (error) {
+      console.error('❌ Error fetching brands:', error);
+    }
+  };
+
+  const fetchLineSuggestions = async (brandId: string, query: string = '') => {
+    setLoadingLines(true);
+    try {
+      const url = `/api/lines?brandId=${encodeURIComponent(brandId)}${
+        query ? `&search=${encodeURIComponent(query)}` : ''
+      }`;
+      const response = await fetch(url);
+      const data = await response.json();
+
+      if (!response.ok || !data.success) {
+        throw new Error(data.error || 'Failed to load lines');
+      }
+
+      const options: AutocompleteOption[] = (data.lines || []).map((line: Line) => ({
+        id: line.id,
+        label: line.name,
+      }));
+
+      setLineSuggestions(options);
+      if (query) {
+        setShowLineSuggestions(true);
+      }
+    } catch (error) {
+      console.error('❌ Error fetching lines:', error);
+    } finally {
+      setLoadingLines(false);
+    }
+  };
+
+  const handleBrandInputChange = (value: string) => {
+    setBrandInput(value);
+    setSelectedBrandId('');
+    setSelectedLineId('');
+    setLineInput('');
+    if (brandSearchTimeoutRef.current) {
+      clearTimeout(brandSearchTimeoutRef.current);
+    }
+    brandSearchTimeoutRef.current = setTimeout(() => {
+      fetchBrandSuggestions(value);
+    }, 200);
+    setShowBrandSuggestions(true);
+  };
+
+  const handleSelectBrand = (option: AutocompleteOption) => {
+    if (!option.id) return;
+    setSelectedBrandId(option.id);
+    setBrandInput(option.label);
+    setShowBrandSuggestions(false);
+    setSelectedLineId('');
+    setLineInput('');
+    fetchLineSuggestions(option.id);
+  };
+
+  const handleCreateBrand = async (name: string) => {
+    if (!name.trim() || creatingBrand) return;
+    try {
+      setCreatingBrand(true);
+      const response = await fetch('/api/brands', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name }),
+      });
+
+      const data = await response.json();
+      if (!response.ok || !data.success) {
+        throw new Error(data.error || 'Failed to create brand');
+      }
+
+      const brand: Brand = data.brand;
+      const newOption: AutocompleteOption = {
+        id: brand.id,
+        label: brand.name,
+        description: brand.country ? `Country: ${brand.country}` : undefined,
+      };
+      setBrandSuggestions((prev) => [newOption, ...prev]);
+      setSelectedBrandId(brand.id);
+      setBrandInput(brand.name);
+      setShowBrandSuggestions(false);
+      setSelectedLineId('');
+      setLineInput('');
+      fetchLineSuggestions(brand.id);
+    } catch (error) {
+      console.error('❌ Error creating brand:', error);
+      alert(error instanceof Error ? error.message : 'Failed to create brand');
+    } finally {
+      setCreatingBrand(false);
+    }
+  };
+
+  const handleLineInputChange = (value: string) => {
+    setLineInput(value);
+    setSelectedLineId('');
+    if (!selectedBrandId) {
+      setShowLineSuggestions(false);
+      return;
+    }
+    if (lineSearchTimeoutRef.current) {
+      clearTimeout(lineSearchTimeoutRef.current);
+    }
+    lineSearchTimeoutRef.current = setTimeout(() => {
+      fetchLineSuggestions(selectedBrandId, value);
+    }, 200);
+    setShowLineSuggestions(true);
+  };
+
+  const handleSelectLine = (option: AutocompleteOption) => {
+    if (!option.id) return;
+    setSelectedLineId(option.id);
+    setLineInput(option.label);
+    setShowLineSuggestions(false);
+  };
+
+  const handleCreateLine = async (name: string) => {
+    if (!selectedBrandId) {
+      alert('Select or create a brand before adding a line.');
+      return;
+    }
+    if (!name.trim() || creatingLine) return;
+    try {
+      setCreatingLine(true);
+      const response = await fetch('/api/lines', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, brandId: selectedBrandId }),
+      });
+
+      const data = await response.json();
+      if (!response.ok || !data.success) {
+        throw new Error(data.error || 'Failed to create line');
+      }
+
+      const line: Line = data.line;
+      const newOption: AutocompleteOption = { id: line.id, label: line.name };
+      setLineSuggestions((prev) => [newOption, ...prev]);
+      setSelectedLineId(line.id);
+      setLineInput(line.name);
+      setShowLineSuggestions(false);
+    } catch (error) {
+      console.error('❌ Error creating line:', error);
+      alert(error instanceof Error ? error.message : 'Failed to create line');
+    } finally {
+      setCreatingLine(false);
+    }
+  };
 
   const fetchCigar = async () => {
     try {
@@ -95,10 +294,22 @@ export default function EditCigarPage() {
       if (data.success && data.cigar) {
         setCigar(data.cigar);
         
-        // Pre-fill form with existing data
         if (data.cigar.line) {
-          setSelectedBrand(data.cigar.line.brand?.id || '');
-          setSelectedLine(data.cigar.line.id);
+          const brandId = data.cigar.line.brand?.id || '';
+          const brandName = data.cigar.line.brand?.name || '';
+          const lineId = data.cigar.line.id;
+          const lineName = data.cigar.line.name;
+
+          setSelectedBrandId(brandId);
+          setBrandInput(brandName);
+          setSelectedLineId(lineId);
+          setLineInput(lineName);
+          setShowBrandSuggestions(false);
+          setShowLineSuggestions(false);
+
+          if (brandId) {
+            fetchLineSuggestions(brandId);
+          }
         }
         setVitola(data.cigar.vitola || '');
         setRingGauge(data.cigar.ring_gauge?.toString() || '');
@@ -111,7 +322,6 @@ export default function EditCigarPage() {
         setPrice(data.cigar.msrp_cents ? (data.cigar.msrp_cents / 100).toFixed(2) : '');
         setCountry(data.cigar.country || '');
         
-        // Parse existing images
         if (data.cigar.image_urls) {
           try {
             const parsed = JSON.parse(data.cigar.image_urls);
@@ -126,33 +336,6 @@ export default function EditCigarPage() {
       alert('Failed to load cigar data');
     } finally {
       setLoading(false);
-    }
-  };
-
-  const fetchBrands = async () => {
-    try {
-      const response = await fetch('/api/brands');
-      const data = await response.json();
-      if (data.success) {
-        setBrands(data.brands || []);
-      }
-    } catch (error) {
-      console.error('Error fetching brands:', error);
-    }
-  };
-
-  const fetchLines = async (brandId: string) => {
-    setLoadingLines(true);
-    try {
-      const response = await fetch(`/api/lines?brandId=${encodeURIComponent(brandId)}`);
-      const data = await response.json();
-      if (data.success) {
-        setLines(data.lines || []);
-      }
-    } catch (error) {
-      console.error('Error fetching lines:', error);
-    } finally {
-      setLoadingLines(false);
     }
   };
 
@@ -211,7 +394,7 @@ export default function EditCigarPage() {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          line: selectedLine,
+          line: selectedLineId,
           vitola,
           ring_gauge: ringGauge ? parseInt(ringGauge) : undefined,
           length_inches: length ? parseFloat(length) : undefined,
@@ -243,7 +426,7 @@ export default function EditCigarPage() {
     }
   };
 
-  const canProceedStep1 = selectedBrand && selectedLine;
+  const canProceedStep1 = Boolean(selectedBrandId && selectedLineId);
   const canProceedStep2 = vitola && ringGauge && length;
   const canSubmit = canProceedStep1 && canProceedStep2;
 
@@ -308,43 +491,120 @@ export default function EditCigarPage() {
 
               <div className="space-y-2 mb-4">
                 <label className="text-sm font-medium">Brand *</label>
-                <select
-                  value={selectedBrand}
-                  onChange={(e) => setSelectedBrand(e.target.value)}
-                  required
-                  className="w-full p-3 rounded-lg border bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
-                >
-                  <option value="">Select a brand...</option>
-                  {brands.map((brand) => (
-                    <option key={brand.id} value={brand.id}>
-                      {brand.name} {brand.country ? `(${brand.country})` : ''}
-                    </option>
-                  ))}
-                </select>
+                <div className="relative">
+                  <input
+                    type="text"
+                    value={brandInput}
+                    onChange={(e) => handleBrandInputChange(e.target.value)}
+                    onFocus={() => {
+                      setShowBrandSuggestions(true);
+                      if (!brandInput) {
+                        fetchBrandSuggestions();
+                      }
+                    }}
+                    onBlur={() => setTimeout(() => setShowBrandSuggestions(false), 150)}
+                    required
+                    placeholder="Search or add a brand..."
+                    className="w-full p-3 rounded-lg border bg-background focus:outline-none focus:ring-2 focus:ring-primary"
+                  />
+                  {showBrandSuggestions && (
+                    <div className="absolute z-30 mt-2 max-h-60 w-full overflow-y-auto rounded-lg border border-border bg-background shadow-xl">
+                      {brandSuggestions.length > 0 ? (
+                        <div className="py-1">
+                          {brandSuggestions.map((option) => (
+                            <button
+                              key={option.id ?? option.label}
+                              type="button"
+                              className="flex w-full flex-col items-start gap-1 px-3 py-2 text-left hover:bg-muted"
+                              onMouseDown={() => handleSelectBrand(option)}
+                            >
+                              <span className="font-medium">{option.label}</span>
+                              {option.description && (
+                                <span className="text-xs text-muted-foreground">
+                                  {option.description}
+                                </span>
+                              )}
+                            </button>
+                          ))}
+                        </div>
+                      ) : (
+                        <p className="px-3 py-2 text-sm text-muted-foreground">
+                          No brands found. Add a new one below.
+                        </p>
+                      )}
+                      {brandInput && (
+                        <button
+                          type="button"
+                          className="flex w-full items-center gap-2 border-t border-border px-3 py-2 text-left text-sm font-medium text-primary hover:bg-primary/10"
+                          onMouseDown={() => handleCreateBrand(brandInput)}
+                          disabled={creatingBrand}
+                        >
+                          {creatingBrand ? 'Creating brand...' : `Add "${brandInput}" as a new brand`}
+                        </button>
+                      )}
+                    </div>
+                  )}
+                </div>
               </div>
 
               <div className="space-y-2">
                 <label className="text-sm font-medium">Product Line *</label>
-                <select
-                  value={selectedLine}
-                  onChange={(e) => setSelectedLine(e.target.value)}
-                  required
-                  disabled={!selectedBrand || loadingLines}
-                  className="w-full p-3 rounded-lg border bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary disabled:opacity-50"
-                >
-                  <option value="">
-                    {!selectedBrand
-                      ? 'Select a brand first...'
-                      : loadingLines
-                        ? 'Loading lines...'
-                        : 'Select a line...'}
-                  </option>
-                  {lines.map((line) => (
-                    <option key={line.id} value={line.id}>
-                      {line.name}
-                    </option>
-                  ))}
-                </select>
+                <div className="relative">
+                  <input
+                    type="text"
+                    value={lineInput}
+                    onChange={(e) => handleLineInputChange(e.target.value)}
+                    onFocus={() => {
+                      if (selectedBrandId) {
+                        setShowLineSuggestions(true);
+                        fetchLineSuggestions(selectedBrandId);
+                      }
+                    }}
+                    onBlur={() => setTimeout(() => setShowLineSuggestions(false), 150)}
+                    required
+                    disabled={!selectedBrandId}
+                    placeholder={
+                      selectedBrandId
+                        ? loadingLines
+                          ? 'Loading lines...'
+                          : 'Search or add a line...'
+                        : 'Select a brand first...'
+                    }
+                    className="w-full p-3 rounded-lg border bg-background focus:outline-none focus:ring-2 focus:ring-primary disabled:opacity-50"
+                  />
+                  {showLineSuggestions && selectedBrandId && (
+                    <div className="absolute z-30 mt-2 max-h-60 w-full overflow-y-auto rounded-lg border border-border bg-background shadow-xl">
+                      {lineSuggestions.length > 0 ? (
+                        <div className="py-1">
+                          {lineSuggestions.map((option) => (
+                            <button
+                              key={option.id ?? option.label}
+                              type="button"
+                              className="w-full px-3 py-2 text-left hover:bg-muted"
+                              onMouseDown={() => handleSelectLine(option)}
+                            >
+                              {option.label}
+                            </button>
+                          ))}
+                        </div>
+                      ) : (
+                        <p className="px-3 py-2 text-sm text-muted-foreground">
+                          No lines found. Add a new one below.
+                        </p>
+                      )}
+                      {lineInput && (
+                        <button
+                          type="button"
+                          className="flex w-full items-center gap-2 border-t border-border px-3 py-2 text-left text-sm font-medium text-primary hover:bg-primary/10"
+                          onMouseDown={() => handleCreateLine(lineInput)}
+                          disabled={creatingLine}
+                        >
+                          {creatingLine ? 'Creating line...' : `Add "${lineInput}" as a new line`}
+                        </button>
+                      )}
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
 
