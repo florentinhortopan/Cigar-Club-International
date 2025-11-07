@@ -1,6 +1,204 @@
+  const handleVitolaChange = (value: string) =>
+    debounceFieldSuggestions(
+      'vitola',
+      value,
+      setVitola,
+      setVitolaSuggestions,
+      setShowVitolaSuggestions,
+      vitolaSearchTimeoutRef
+    );
+
+  const handleCountryChange = (value: string) =>
+    debounceFieldSuggestions(
+      'country',
+      value,
+      setCountry,
+      setCountrySuggestions,
+      setShowCountrySuggestions,
+      countrySearchTimeoutRef
+    );
+
+  const handleWrapperChange = (value: string) =>
+    debounceFieldSuggestions(
+      'wrapper',
+      value,
+      setWrapper,
+      setWrapperSuggestions,
+      setShowWrapperSuggestions,
+      wrapperSearchTimeoutRef
+    );
+
+  const handleBinderChange = (value: string) =>
+    debounceFieldSuggestions(
+      'binder',
+      value,
+      setBinder,
+      setBinderSuggestions,
+      setShowBinderSuggestions,
+      binderSearchTimeoutRef
+    );
+
+  const handleFillerChange = (value: string) =>
+    debounceFieldSuggestions(
+      'filler',
+      value,
+      setFiller,
+      setFillerSuggestions,
+      setShowFillerSuggestions,
+      fillerSearchTimeoutRef
+    );
+  const fetchCigarFieldSuggestions = async (field: string, query: string) => {
+    try {
+      const url = `/api/cigars/suggestions?field=${encodeURIComponent(field)}${
+        query ? `&search=${encodeURIComponent(query)}` : ''
+      }`;
+      const response = await fetch(url);
+      const data = await response.json();
+      if (!response.ok || !data.success) {
+        throw new Error(data.error || 'Failed to fetch suggestions');
+      }
+      return (data.suggestions || []) as string[];
+    } catch (error) {
+      console.error(`❌ Error fetching ${field} suggestions:`, error);
+      return [];
+    }
+  };
+
+  const debounceFieldSuggestions = (
+    field: string,
+    value: string,
+    setter: (value: string) => void,
+    setSuggestions: (options: string[]) => void,
+    setShow: (open: boolean) => void,
+    timeoutRef: MutableRefObject<NodeJS.Timeout | null>
+  ) => {
+    setter(value);
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+    }
+    timeoutRef.current = setTimeout(async () => {
+      const results = await fetchCigarFieldSuggestions(field, value);
+      setSuggestions(results);
+      setShow(true);
+    }, 200);
+  };
+  const handleBrandInputChange = (value: string) => {
+    setBrandInput(value);
+    setSelectedBrandId('');
+    if (brandSearchTimeoutRef.current) {
+      clearTimeout(brandSearchTimeoutRef.current);
+    }
+    brandSearchTimeoutRef.current = setTimeout(() => {
+      fetchBrandSuggestions(value);
+    }, 200);
+    setShowBrandSuggestions(true);
+  };
+
+  const handleSelectBrand = (option: AutocompleteOption) => {
+    if (!option.id) return;
+    setSelectedBrandId(option.id);
+    setBrandInput(option.label);
+    setShowBrandSuggestions(false);
+    setSelectedLineId('');
+    setLineInput('');
+    fetchLineSuggestions(option.id);
+  };
+
+  const handleCreateBrand = async (name: string) => {
+    if (!name.trim() || creatingBrand) return;
+    try {
+      setCreatingBrand(true);
+      const response = await fetch('/api/brands', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name }),
+      });
+
+      const data = await response.json();
+      if (!response.ok || !data.success) {
+        throw new Error(data.error || 'Failed to create brand');
+      }
+
+      const brand: Brand = data.brand;
+      setBrands((prev) => [brand, ...prev]);
+      setBrandSuggestions((prev) => [
+        { id: brand.id, label: brand.name, description: brand.country ? `Country: ${brand.country}` : undefined },
+        ...prev,
+      ]);
+      setSelectedBrandId(brand.id);
+      setBrandInput(brand.name);
+      setShowBrandSuggestions(false);
+      setSelectedLineId('');
+      setLineInput('');
+      fetchLineSuggestions(brand.id);
+    } catch (error) {
+      console.error('❌ Error creating brand:', error);
+      alert(error instanceof Error ? error.message : 'Failed to create brand');
+    } finally {
+      setCreatingBrand(false);
+    }
+  };
+
+  const handleLineInputChange = (value: string) => {
+    setLineInput(value);
+    setSelectedLineId('');
+    if (!selectedBrandId) {
+      setShowLineSuggestions(false);
+      return;
+    }
+    if (lineSearchTimeoutRef.current) {
+      clearTimeout(lineSearchTimeoutRef.current);
+    }
+    lineSearchTimeoutRef.current = setTimeout(() => {
+      fetchLineSuggestions(selectedBrandId, value);
+    }, 200);
+    setShowLineSuggestions(true);
+  };
+
+  const handleSelectLine = (option: AutocompleteOption) => {
+    if (!option.id) return;
+    setSelectedLineId(option.id);
+    setLineInput(option.label);
+    setShowLineSuggestions(false);
+  };
+
+  const handleCreateLine = async (name: string) => {
+    if (!selectedBrandId) {
+      alert('Select or create a brand before adding a line.');
+      return;
+    }
+    if (!name.trim() || creatingLine) return;
+    try {
+      setCreatingLine(true);
+      const response = await fetch('/api/lines', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, brandId: selectedBrandId }),
+      });
+
+      const data = await response.json();
+      if (!response.ok || !data.success) {
+        throw new Error(data.error || 'Failed to create line');
+      }
+
+      const line: Line = data.line;
+      setLineSuggestions((prev) => [
+        { id: line.id, label: line.name },
+        ...prev,
+      ]);
+      setSelectedLineId(line.id);
+      setLineInput(line.name);
+      setShowLineSuggestions(false);
+    } catch (error) {
+      console.error('❌ Error creating line:', error);
+      alert(error instanceof Error ? error.message : 'Failed to create line');
+    } finally {
+      setCreatingLine(false);
+    }
+  };
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, type MutableRefObject } from 'react';
 import { useRouter } from 'next/navigation';
 import { ArrowLeft, Cigarette, Check, Upload, X, Image as ImageIcon } from 'lucide-react';
 import Link from 'next/link';
@@ -20,81 +218,147 @@ interface Line {
 const STRENGTH_OPTIONS = ['Mild', 'Medium-Mild', 'Medium', 'Medium-Full', 'Full'];
 const BODY_OPTIONS = ['Light', 'Medium-Light', 'Medium', 'Medium-Full', 'Full'];
 
+interface AutocompleteOption {
+  id?: string;
+  label: string;
+  description?: string;
+}
+
 export default function AddCigarPage() {
   const router = useRouter();
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
-  const [brands, setBrands] = useState<Brand[]>([]);
-  const [lines, setLines] = useState<Line[]>([]);
   const [loadingLines, setLoadingLines] = useState(false);
+  const [selectedBrandId, setSelectedBrandId] = useState('');
+  const [brandInput, setBrandInput] = useState('');
+  const [selectedLineId, setSelectedLineId] = useState('');
+  const [lineInput, setLineInput] = useState('');
 
   // Form data
-  const [selectedBrand, setSelectedBrand] = useState('');
-  const [selectedLine, setSelectedLine] = useState('');
+  const [brandSuggestions, setBrandSuggestions] = useState<AutocompleteOption[]>([]);
+  const [showBrandSuggestions, setShowBrandSuggestions] = useState(false);
+  const brandSearchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const [creatingBrand, setCreatingBrand] = useState(false);
+
+  const [lineSuggestions, setLineSuggestions] = useState<AutocompleteOption[]>([]);
+  const [showLineSuggestions, setShowLineSuggestions] = useState(false);
+  const lineSearchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const [creatingLine, setCreatingLine] = useState(false);
+
   const [vitola, setVitola] = useState('');
+  const [vitolaSuggestions, setVitolaSuggestions] = useState<string[]>([]);
+  const [showVitolaSuggestions, setShowVitolaSuggestions] = useState(false);
+  const vitolaSearchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const [ringGauge, setRingGauge] = useState('');
   const [length, setLength] = useState('');
   const [wrapper, setWrapper] = useState('');
+  const [wrapperSuggestions, setWrapperSuggestions] = useState<string[]>([]);
+  const [showWrapperSuggestions, setShowWrapperSuggestions] = useState(false);
+  const wrapperSearchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const [binder, setBinder] = useState('');
+  const [binderSuggestions, setBinderSuggestions] = useState<string[]>([]);
+  const [showBinderSuggestions, setShowBinderSuggestions] = useState(false);
+  const binderSearchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const [filler, setFiller] = useState('');
+  const [fillerSuggestions, setFillerSuggestions] = useState<string[]>([]);
+  const [showFillerSuggestions, setShowFillerSuggestions] = useState(false);
+  const fillerSearchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const [strength, setStrength] = useState('Medium');
   const [body, setBody] = useState('Medium');
   const [price, setPrice] = useState('');
   const [country, setCountry] = useState('');
+  const [countrySuggestions, setCountrySuggestions] = useState<string[]>([]);
+  const [showCountrySuggestions, setShowCountrySuggestions] = useState(false);
+  const countrySearchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  useEffect(() => {
+    const refs = [
+      brandSearchTimeoutRef,
+      lineSearchTimeoutRef,
+      vitolaSearchTimeoutRef,
+      countrySearchTimeoutRef,
+      wrapperSearchTimeoutRef,
+      binderSearchTimeoutRef,
+      fillerSearchTimeoutRef,
+    ];
+
+    return () => {
+      refs.forEach((ref) => {
+        if (ref.current) {
+          clearTimeout(ref.current);
+        }
+      });
+    };
+  }, []);
   const [images, setImages] = useState<string[]>([]);
   const [uploadingImages, setUploadingImages] = useState(false);
   const [addToHumidor, setAddToHumidor] = useState(true); // Default to true for convenience
   const [humidorQuantity, setHumidorQuantity] = useState('1'); // Quantity to add to humidor
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // Load brands on mount
+  // Load initial brand suggestions
   useEffect(() => {
-    console.log('🔵 AddCigarPage mounted, fetching brands...');
-    fetchBrands();
+    fetchBrandSuggestions();
   }, []);
 
   // Load lines when brand is selected
   useEffect(() => {
-    if (selectedBrand) {
-      fetchLines(selectedBrand);
+    if (selectedBrandId) {
+      fetchLineSuggestions(selectedBrandId);
     } else {
-      setLines([]);
-      setSelectedLine('');
+      setLineSuggestions([]);
+      setSelectedLineId('');
+      setLineInput('');
     }
-  }, [selectedBrand]);
+  }, [selectedBrandId]);
 
-  const fetchBrands = async () => {
+  const fetchBrandSuggestions = async (query: string = '') => {
     try {
-      console.log('📡 Fetching brands...');
-      const response = await fetch('/api/brands');
-      console.log('📡 Response status:', response.status);
+      const url = query
+        ? `/api/brands?search=${encodeURIComponent(query)}`
+        : '/api/brands';
+      const response = await fetch(url);
       const data = await response.json();
-      console.log('📡 Brands data:', data);
-      setBrands(data.brands || []);
-      if (data.brands && data.brands.length > 0) {
-        console.log(`✅ Loaded ${data.brands.length} brands`);
-      } else {
-        console.warn('⚠️ No brands returned from API');
+
+      if (!response.ok || !data.success) {
+        throw new Error(data.error || 'Failed to load brands');
+      }
+
+      const options: AutocompleteOption[] = (data.brands || []).map((brand: Brand) => ({
+        id: brand.id,
+        label: brand.name,
+        description: brand.country ? `Country: ${brand.country}` : undefined,
+      }));
+
+      setBrandSuggestions(options);
+      if (query) {
+        setShowBrandSuggestions(true);
       }
     } catch (error) {
       console.error('❌ Error fetching brands:', error);
-      alert('Failed to load brands. Check console for details.');
     }
   };
 
-  const fetchLines = async (brandId: string) => {
+  const fetchLineSuggestions = async (brandId: string, query: string = '') => {
     setLoadingLines(true);
     try {
-      console.log('📡 Fetching lines for brand:', brandId);
-      const response = await fetch(`/api/lines?brandId=${encodeURIComponent(brandId)}`);
-      console.log('📡 Lines response status:', response.status);
+      const url = `/api/lines?brandId=${encodeURIComponent(brandId)}${
+        query ? `&search=${encodeURIComponent(query)}` : ''
+      }`;
+      const response = await fetch(url);
       const data = await response.json();
-      console.log('📡 Lines data:', data);
-      setLines(data.lines || []);
-      if (data.lines && data.lines.length > 0) {
-        console.log(`✅ Loaded ${data.lines.length} lines`);
-      } else {
-        console.warn('⚠️ No lines returned for brand');
+
+      if (!response.ok || !data.success) {
+        throw new Error(data.error || 'Failed to load lines');
+      }
+
+      const options: AutocompleteOption[] = (data.lines || []).map((line: Line) => ({
+        id: line.id,
+        label: line.name,
+      }));
+
+      setLineSuggestions(options);
+      if (query) {
+        setShowLineSuggestions(true);
       }
     } catch (error) {
       console.error('❌ Error fetching lines:', error);
@@ -155,7 +419,7 @@ export default function AddCigarPage() {
     setLoading(true);
 
     const requestData = {
-      line: selectedLine,
+      line: selectedLineId,
       vitola,
       ring_gauge: ringGauge ? parseInt(ringGauge) : undefined,
       length_inches: length ? parseFloat(length) : undefined,
@@ -213,7 +477,7 @@ export default function AddCigarPage() {
     }
   };
 
-  const canProceedStep1 = selectedBrand && selectedLine;
+  const canProceedStep1 = Boolean(selectedBrandId && selectedLineId);
   const canProceedStep2 = vitola && ringGauge && length;
   const canSubmit = canProceedStep1 && canProceedStep2;
 
@@ -251,44 +515,121 @@ export default function AddCigarPage() {
               {/* Brand Selection */}
               <div className="space-y-2 mb-4">
                 <label className="text-sm font-medium">Brand *</label>
-                <select
-                  value={selectedBrand}
-                  onChange={(e) => setSelectedBrand(e.target.value)}
-                  required
-                  className="w-full p-3 rounded-lg border bg-background focus:outline-none focus:ring-2 focus:ring-primary"
-                >
-                  <option value="">Select a brand...</option>
-                  {brands.map((brand) => (
-                    <option key={brand.id} value={brand.id}>
-                      {brand.name} {brand.country && `(${brand.country})`}
-                    </option>
-                  ))}
-                </select>
+                <div className="relative">
+                  <input
+                    type="text"
+                    value={brandInput}
+                    onChange={(e) => handleBrandInputChange(e.target.value)}
+                    onFocus={() => {
+                      setShowBrandSuggestions(true);
+                      if (!brandInput) {
+                        fetchBrandSuggestions();
+                      }
+                    }}
+                    onBlur={() => setTimeout(() => setShowBrandSuggestions(false), 150)}
+                    required
+                    placeholder="Search or add a brand..."
+                    className="w-full p-3 rounded-lg border bg-background focus:outline-none focus:ring-2 focus:ring-primary"
+                  />
+                  {showBrandSuggestions && (
+                    <div className="absolute z-20 mt-2 max-h-60 w-full overflow-y-auto rounded-lg border bg-card shadow-lg">
+                      {brandSuggestions.length > 0 ? (
+                        <div className="py-1">
+                          {brandSuggestions.map((option) => (
+                            <button
+                              key={option.id ?? option.label}
+                              type="button"
+                              className="flex w-full flex-col items-start gap-1 px-3 py-2 text-left hover:bg-muted"
+                              onMouseDown={() => handleSelectBrand(option)}
+                            >
+                              <span className="font-medium">{option.label}</span>
+                              {option.description && (
+                                <span className="text-xs text-muted-foreground">
+                                  {option.description}
+                                </span>
+                              )}
+                            </button>
+                          ))}
+                        </div>
+                      ) : (
+                        <p className="px-3 py-2 text-sm text-muted-foreground">
+                          No brands found. Add a new one below.
+                        </p>
+                      )}
+                      {brandInput && (
+                        <button
+                          type="button"
+                          className="flex w-full items-center gap-2 border-t px-3 py-2 text-left text-sm font-medium text-primary hover:bg-primary/10"
+                          onMouseDown={() => handleCreateBrand(brandInput)}
+                          disabled={creatingBrand}
+                        >
+                          {creatingBrand ? 'Creating brand...' : `Add "${brandInput}" as a new brand`}
+                        </button>
+                      )}
+                    </div>
+                  )}
+                </div>
               </div>
 
               {/* Line Selection */}
               <div className="space-y-2">
                 <label className="text-sm font-medium">Product Line *</label>
-                <select
-                  value={selectedLine}
-                  onChange={(e) => setSelectedLine(e.target.value)}
-                  required
-                  disabled={!selectedBrand || loadingLines}
-                  className="w-full p-3 rounded-lg border bg-background focus:outline-none focus:ring-2 focus:ring-primary disabled:opacity-50"
-                >
-                  <option value="">
-                    {!selectedBrand
-                      ? 'Select a brand first...'
-                      : loadingLines
-                        ? 'Loading lines...'
-                        : 'Select a line...'}
-                  </option>
-                  {lines.map((line) => (
-                    <option key={line.id} value={line.id}>
-                      {line.name}
-                    </option>
-                  ))}
-                </select>
+                <div className="relative">
+                  <input
+                    type="text"
+                    value={lineInput}
+                    onChange={(e) => handleLineInputChange(e.target.value)}
+                    onFocus={() => {
+                      if (selectedBrandId) {
+                        setShowLineSuggestions(true);
+                        fetchLineSuggestions(selectedBrandId);
+                      }
+                    }}
+                    onBlur={() => setTimeout(() => setShowLineSuggestions(false), 150)}
+                    required
+                    disabled={!selectedBrandId}
+                    placeholder={
+                      selectedBrandId
+                        ? loadingLines
+                          ? 'Loading lines...'
+                          : 'Search or add a line...'
+                        : 'Select a brand first...'
+                    }
+                    className="w-full p-3 rounded-lg border bg-background focus:outline-none focus:ring-2 focus:ring-primary disabled:opacity-50"
+                  />
+                  {showLineSuggestions && selectedBrandId && (
+                    <div className="absolute z-20 mt-2 max-h-60 w-full overflow-y-auto rounded-lg border bg-card shadow-lg">
+                      {lineSuggestions.length > 0 ? (
+                        <div className="py-1">
+                          {lineSuggestions.map((option) => (
+                            <button
+                              key={option.id ?? option.label}
+                              type="button"
+                              className="w-full px-3 py-2 text-left hover:bg-muted"
+                              onMouseDown={() => handleSelectLine(option)}
+                            >
+                              {option.label}
+                            </button>
+                          ))}
+                        </div>
+                      ) : (
+                        <p className="px-3 py-2 text-sm text-muted-foreground">
+                          No lines found. Add a new one below.
+                        </p>
+                      )}
+                      {lineInput && (
+                        <button
+                          type="button"
+                          className="flex w-full items-center gap-2 border-t px-3 py-2 text-left text-sm font-medium text-primary hover:bg-primary/10"
+                          onMouseDown={() => handleCreateLine(lineInput)}
+                          disabled={creatingLine}
+                        >
+                          {creatingLine ? 'Creating line...' : `Add "${lineInput}" as a new line`}
+                        </button>
+                      )}
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
 
@@ -313,14 +654,44 @@ export default function AddCigarPage() {
                 {/* Vitola */}
                 <div className="space-y-2">
                   <label className="text-sm font-medium">Vitola (Shape) *</label>
-                  <input
-                    type="text"
-                    value={vitola}
-                    onChange={(e) => setVitola(e.target.value)}
-                    required
-                    placeholder="e.g., Robusto, Toro, Churchill"
-                    className="w-full p-3 rounded-lg border bg-background focus:outline-none focus:ring-2 focus:ring-primary"
-                  />
+                  <div className="relative">
+                    <input
+                      type="text"
+                      value={vitola}
+                      onChange={(e) => handleVitolaChange(e.target.value)}
+                      onFocus={() => {
+                        setShowVitolaSuggestions(true);
+                        if (vitolaSuggestions.length === 0) {
+                          fetchCigarFieldSuggestions('vitola', '').then((results) => {
+                            setVitolaSuggestions(results);
+                          });
+                        }
+                      }}
+                      onBlur={() => setTimeout(() => setShowVitolaSuggestions(false), 150)}
+                      required
+                      placeholder="e.g., Robusto, Toro, Churchill"
+                      className="w-full p-3 rounded-lg border bg-background focus:outline-none focus:ring-2 focus:ring-primary"
+                    />
+                    {showVitolaSuggestions && vitolaSuggestions.length > 0 && (
+                      <div className="absolute z-20 mt-2 max-h-48 w-full overflow-y-auto rounded-lg border bg-card shadow-lg">
+                        <div className="py-1">
+                          {vitolaSuggestions.map((option) => (
+                            <button
+                              key={option}
+                              type="button"
+                              className="w-full px-3 py-2 text-left hover:bg-muted"
+                              onMouseDown={() => {
+                                setVitola(option);
+                                setShowVitolaSuggestions(false);
+                              }}
+                            >
+                              {option}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
                 </div>
 
                 {/* Ring Gauge & Length */}
@@ -357,13 +728,43 @@ export default function AddCigarPage() {
                 {/* Country */}
                 <div className="space-y-2">
                   <label className="text-sm font-medium">Country of Origin</label>
-                  <input
-                    type="text"
-                    value={country}
-                    onChange={(e) => setCountry(e.target.value)}
-                    placeholder="e.g., Nicaragua, Dominican Republic"
-                    className="w-full p-3 rounded-lg border bg-background focus:outline-none focus:ring-2 focus:ring-primary"
-                  />
+                  <div className="relative">
+                    <input
+                      type="text"
+                      value={country}
+                      onChange={(e) => handleCountryChange(e.target.value)}
+                      onFocus={() => {
+                        setShowCountrySuggestions(true);
+                        if (countrySuggestions.length === 0) {
+                          fetchCigarFieldSuggestions('country', '').then((results) => {
+                            setCountrySuggestions(results);
+                          });
+                        }
+                      }}
+                      onBlur={() => setTimeout(() => setShowCountrySuggestions(false), 150)}
+                      placeholder="e.g., Nicaragua, Dominican Republic"
+                      className="w-full p-3 rounded-lg border bg-background focus:outline-none focus:ring-2 focus:ring-primary"
+                    />
+                    {showCountrySuggestions && countrySuggestions.length > 0 && (
+                      <div className="absolute z-20 mt-2 max-h-48 w-full overflow-y-auto rounded-lg border bg-card shadow-lg">
+                        <div className="py-1">
+                          {countrySuggestions.map((option) => (
+                            <button
+                              key={option}
+                              type="button"
+                              className="w-full px-3 py-2 text-left hover:bg-muted"
+                              onMouseDown={() => {
+                                setCountry(option);
+                                setShowCountrySuggestions(false);
+                              }}
+                            >
+                              {option}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
                 </div>
               </div>
             </div>
@@ -398,35 +799,125 @@ export default function AddCigarPage() {
                 {/* Wrapper, Binder, Filler */}
                 <div className="space-y-2">
                   <label className="text-sm font-medium">Wrapper</label>
-                  <input
-                    type="text"
-                    value={wrapper}
-                    onChange={(e) => setWrapper(e.target.value)}
-                    placeholder="e.g., Connecticut, Maduro, Habano"
-                    className="w-full p-3 rounded-lg border bg-background focus:outline-none focus:ring-2 focus:ring-primary"
-                  />
+                  <div className="relative">
+                    <input
+                      type="text"
+                      value={wrapper}
+                      onChange={(e) => handleWrapperChange(e.target.value)}
+                      onFocus={() => {
+                        setShowWrapperSuggestions(true);
+                        if (wrapperSuggestions.length === 0) {
+                          fetchCigarFieldSuggestions('wrapper', '').then((results) => {
+                            setWrapperSuggestions(results);
+                          });
+                        }
+                      }}
+                      onBlur={() => setTimeout(() => setShowWrapperSuggestions(false), 150)}
+                      placeholder="e.g., Connecticut, Maduro, Habano"
+                      className="w-full p-3 rounded-lg border bg-background focus:outline-none focus:ring-2 focus:ring-primary"
+                    />
+                    {showWrapperSuggestions && wrapperSuggestions.length > 0 && (
+                      <div className="absolute z-20 mt-2 max-h-48 w-full overflow-y-auto rounded-lg border bg-card shadow-lg">
+                        <div className="py-1">
+                          {wrapperSuggestions.map((option) => (
+                            <button
+                              key={option}
+                              type="button"
+                              className="w-full px-3 py-2 text-left hover:bg-muted"
+                              onMouseDown={() => {
+                                setWrapper(option);
+                                setShowWrapperSuggestions(false);
+                              }}
+                            >
+                              {option}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
                 </div>
 
                 <div className="space-y-2">
                   <label className="text-sm font-medium">Binder</label>
-                  <input
-                    type="text"
-                    value={binder}
-                    onChange={(e) => setBinder(e.target.value)}
-                    placeholder="e.g., Nicaraguan"
-                    className="w-full p-3 rounded-lg border bg-background focus:outline-none focus:ring-2 focus:ring-primary"
-                  />
+                  <div className="relative">
+                    <input
+                      type="text"
+                      value={binder}
+                      onChange={(e) => handleBinderChange(e.target.value)}
+                      onFocus={() => {
+                        setShowBinderSuggestions(true);
+                        if (binderSuggestions.length === 0) {
+                          fetchCigarFieldSuggestions('binder', '').then((results) => {
+                            setBinderSuggestions(results);
+                          });
+                        }
+                      }}
+                      onBlur={() => setTimeout(() => setShowBinderSuggestions(false), 150)}
+                      placeholder="e.g., Nicaraguan"
+                      className="w-full p-3 rounded-lg border bg-background focus:outline-none focus:ring-2 focus:ring-primary"
+                    />
+                    {showBinderSuggestions && binderSuggestions.length > 0 && (
+                      <div className="absolute z-20 mt-2 max-h-48 w-full overflow-y-auto rounded-lg border bg-card shadow-lg">
+                        <div className="py-1">
+                          {binderSuggestions.map((option) => (
+                            <button
+                              key={option}
+                              type="button"
+                              className="w-full px-3 py-2 text-left hover:bg-muted"
+                              onMouseDown={() => {
+                                setBinder(option);
+                                setShowBinderSuggestions(false);
+                              }}
+                            >
+                              {option}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
                 </div>
 
                 <div className="space-y-2">
                   <label className="text-sm font-medium">Filler</label>
-                  <input
-                    type="text"
-                    value={filler}
-                    onChange={(e) => setFiller(e.target.value)}
-                    placeholder="e.g., Nicaraguan, Dominican"
-                    className="w-full p-3 rounded-lg border bg-background focus:outline-none focus:ring-2 focus:ring-primary"
-                  />
+                  <div className="relative">
+                    <input
+                      type="text"
+                      value={filler}
+                      onChange={(e) => handleFillerChange(e.target.value)}
+                      onFocus={() => {
+                        setShowFillerSuggestions(true);
+                        if (fillerSuggestions.length === 0) {
+                          fetchCigarFieldSuggestions('filler', '').then((results) => {
+                            setFillerSuggestions(results);
+                          });
+                        }
+                      }}
+                      onBlur={() => setTimeout(() => setShowFillerSuggestions(false), 150)}
+                      placeholder="e.g., Nicaraguan, Dominican"
+                      className="w-full p-3 rounded-lg border bg-background focus:outline-none focus:ring-2 focus:ring-primary"
+                    />
+                    {showFillerSuggestions && fillerSuggestions.length > 0 && (
+                      <div className="absolute z-20 mt-2 max-h-48 w-full overflow-y-auto rounded-lg border bg-card shadow-lg">
+                        <div className="py-1">
+                          {fillerSuggestions.map((option) => (
+                            <button
+                              key={option}
+                              type="button"
+                              className="w-full px-3 py-2 text-left hover:bg-muted"
+                              onMouseDown={() => {
+                                setFiller(option);
+                                setShowFillerSuggestions(false);
+                              }}
+                            >
+                              {option}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
                 </div>
 
                 {/* Strength & Body */}
