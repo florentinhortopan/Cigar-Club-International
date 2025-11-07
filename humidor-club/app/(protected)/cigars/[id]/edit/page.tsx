@@ -312,7 +312,7 @@ export default function EditCigarPage() {
                   value={selectedBrand}
                   onChange={(e) => setSelectedBrand(e.target.value)}
                   required
-                  className="w-full p-3 rounded-lg border bg-background focus:outline-none focus:ring-2 focus:ring-primary"
+                  className="w-full p-3 rounded-lg border bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
                 >
                   <option value="">Select a brand...</option>
                   {brands.map((brand) => (
@@ -330,7 +330,7 @@ export default function EditCigarPage() {
                   onChange={(e) => setSelectedLine(e.target.value)}
                   required
                   disabled={!selectedBrand || loadingLines}
-                  className="w-full p-3 rounded-lg border bg-background focus:outline-none focus:ring-2 focus:ring-primary disabled:opacity-50"
+                  className="w-full p-3 rounded-lg border bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary disabled:opacity-50"
                 >
                   <option value="">
                     {!selectedBrand

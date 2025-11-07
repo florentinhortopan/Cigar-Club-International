@@ -14,11 +14,17 @@ type CigarPageProps = {
 };
 
 export default async function CigarDetailPage({ params }: CigarPageProps) {
-  const { id } = params;
+  const rawId = params?.id;
+  const cigarId = Array.isArray(rawId) ? rawId[0] : rawId;
+
+  if (!cigarId || typeof cigarId !== 'string') {
+    notFound();
+  }
+
   const session = await getServerSession(authOptions);
 
   const cigar = await prisma.cigar.findUnique({
-    where: { id },
+    where: { id: cigarId },
     include: {
       line: {
         include: {
@@ -32,7 +38,7 @@ export default async function CigarDetailPage({ params }: CigarPageProps) {
     notFound();
   }
 
-  const pairings = await getPairingsByCigar(id);
+  const pairings = await getPairingsByCigar(cigarId);
 
   const heroImage = (() => {
     if (!cigar.image_urls) {
@@ -101,7 +107,7 @@ export default async function CigarDetailPage({ params }: CigarPageProps) {
           </div>
 
           <PairingsPanel
-            cigarId={id}
+            cigarId={cigarId}
             currentUserId={session?.user?.id}
             initialPairings={pairings.map((pairing) => ({
               id: pairing.id,
