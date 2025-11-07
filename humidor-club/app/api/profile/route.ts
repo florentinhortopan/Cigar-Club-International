@@ -25,6 +25,7 @@ export async function GET() {
         email: true,
         image: true,
         emailVerified: true,
+        branch_id: true,
       },
     });
 
@@ -43,6 +44,7 @@ export async function GET() {
         ...user,
         emailVerified: user.emailVerified ? user.emailVerified.toISOString() : null,
         createdAt: new Date().toISOString(), // Fallback - User model doesn't have createdAt field
+        branch_id: user.branch_id, // Include branch_id for dashboard
       },
     });
   } catch (error) {

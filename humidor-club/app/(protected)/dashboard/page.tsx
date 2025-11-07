@@ -14,6 +14,14 @@ interface DashboardStats {
   reputation: number;
 }
 
+interface Branch {
+  id: string;
+  name: string;
+  city?: string | null;
+  region?: string | null;
+  country?: string | null;
+}
+
 export default function DashboardPage() {
   const [stats, setStats] = useState<DashboardStats>({
     totalCigarsInClub: 0,
@@ -25,9 +33,11 @@ export default function DashboardPage() {
     reputation: 0,
   });
   const [loading, setLoading] = useState(true);
+  const [branch, setBranch] = useState<Branch | null>(null);
 
   useEffect(() => {
     fetchStats();
+    fetchUserBranch();
   }, []);
 
   const fetchStats = async () => {
@@ -46,6 +56,34 @@ export default function DashboardPage() {
     }
   };
 
+  const fetchUserBranch = async () => {
+    try {
+      // Fetch user profile to get branch_id
+      const profileResponse = await fetch('/api/profile');
+      const profileData = await profileResponse.json();
+      
+      if (profileData.success && profileData.user) {
+        // Fetch all branches and find the user's branch
+        const branchesResponse = await fetch('/api/branches');
+        const branchesData = await branchesResponse.json();
+        
+        if (branchesData.success) {
+          // Find branch by matching user's branch_id (we'll need to get this from profile)
+          // For now, let's fetch branches and check if user has a branch
+          const userBranchId = profileData.user.branch_id;
+          if (userBranchId) {
+            const userBranch = branchesData.branches.find((b: Branch) => b.id === userBranchId);
+            if (userBranch) {
+              setBranch(userBranch);
+            }
+          }
+        }
+      }
+    } catch (error) {
+      console.error('Error fetching user branch:', error);
+    }
+  };
+
   const formatCurrency = (cents: number) => {
     return `$${(cents / 100).toFixed(2)}`;
   };
@@ -56,7 +94,7 @@ export default function DashboardPage() {
       <div>
         <h1 className="text-3xl font-bold">Dashboard</h1>
         <p className="text-muted-foreground mt-2">
-          Welcome back to Cigar Club International
+          Welcome back to Cigar Club International{branch && ` - ${branch.name}`}
         </p>
       </div>
 

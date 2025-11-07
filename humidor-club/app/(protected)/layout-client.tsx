@@ -1,6 +1,6 @@
 'use client';
 
-import { Home, Package, Search, TrendingUp, User } from 'lucide-react';
+import { Home, Package, Search, TrendingUp, User, Users } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { ReactNode } from 'react';
@@ -16,6 +16,7 @@ const navItems: NavItem[] = [
   { href: '/cigars', label: 'Cigars', icon: Search },
   { href: '/humidor', label: 'Humidor', icon: Package },
   { href: '/marketplace', label: 'Market', icon: TrendingUp },
+  { href: '/people', label: 'People', icon: Users },
   { href: '/profile', label: 'Profile', icon: User },
 ];
 
@@ -32,23 +33,29 @@ export function ProtectedLayoutClient({ children }: ProtectedLayoutClientProps) 
       <aside className="hidden md:fixed md:inset-y-0 md:left-0 md:flex md:w-64 md:flex-col md:z-30">
         <div className="flex flex-col flex-1 min-h-0 border-r bg-background">
           <div className="flex flex-col flex-1 pt-5 pb-4 overflow-y-auto">
-            <Link href="/dashboard" className="flex items-center flex-shrink-0 px-4 mb-5 hover:opacity-80 transition-opacity">
-              <div className="p-2 rounded-lg bg-primary/10">
-                <svg
-                  className="h-6 w-6 text-primary"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M12 6v6m0 0v6m0-6h6m-6 0H6"
-                  />
-                </svg>
+            <Link href="/dashboard" className="flex flex-col flex-shrink-0 px-4 mb-5 hover:opacity-80 transition-opacity">
+              <div className="flex items-center mb-2">
+                <div className="p-2 rounded-lg bg-primary/10">
+                  <svg
+                    className="h-6 w-6 text-primary"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M12 6v6m0 0v6m0-6h6m-6 0H6"
+                    />
+                  </svg>
+                </div>
               </div>
-              <span className="ml-2 text-xl font-semibold">Humidor Club</span>
+              <span className="text-lg font-semibold leading-tight">
+                <span className="block">Cigar</span>
+                <span className="block">Club</span>
+                <span className="block">International</span>
+              </span>
             </Link>
             <nav className="flex-1 px-3 space-y-1">
               {navItems.map((item) => {
@@ -101,7 +108,7 @@ export function ProtectedLayoutClient({ children }: ProtectedLayoutClientProps) 
 
       {/* Main Content */}
       <main className="flex-1 overflow-y-auto pb-20 md:pb-4 md:ml-64">
-        <div className="container py-6">{children}</div>
+        <div className="container py-6 px-4 md:px-6 lg:px-8">{children}</div>
       </main>
 
       {/* Bottom Navigation - Mobile First */}
