@@ -14,11 +14,17 @@ if (process.env.VERCEL) {
 const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null;
 
 const baseAdapter = PrismaAdapter(prisma);
+const useVerificationTokenFn = baseAdapter.useVerificationToken?.bind(baseAdapter);
 const adapter = {
   ...baseAdapter,
-  useVerificationToken: async (...params: Parameters<typeof baseAdapter.useVerificationToken>) => {
+  useVerificationToken: async (
+    params: Parameters<NonNullable<typeof useVerificationTokenFn>>[0]
+  ) => {
+    if (!useVerificationTokenFn) {
+      return null;
+    }
     try {
-      return await baseAdapter.useVerificationToken(...params);
+      return await useVerificationTokenFn(params);
     } catch (error) {
       if (
         error instanceof Prisma.PrismaClientKnownRequestError &&
