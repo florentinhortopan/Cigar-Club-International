@@ -1,6 +1,7 @@
 import NextAuth, { NextAuthOptions } from 'next-auth';
 import EmailProvider from 'next-auth/providers/email';
 import { PrismaAdapter } from '@auth/prisma-adapter';
+import { Prisma } from '@prisma/client';
 import { prisma } from '@/lib/prisma';
 import { Resend } from 'resend';
 import { storeMagicLink } from '@/lib/magic-link-store';
@@ -12,8 +13,27 @@ if (process.env.VERCEL) {
 
 const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null;
 
+const baseAdapter = PrismaAdapter(prisma);
+const adapter = {
+  ...baseAdapter,
+  useVerificationToken: async (...params: Parameters<typeof baseAdapter.useVerificationToken>) => {
+    try {
+      return await baseAdapter.useVerificationToken(...params);
+    } catch (error) {
+      if (
+        error instanceof Prisma.PrismaClientKnownRequestError &&
+        error.code === 'P2025'
+      ) {
+        console.warn('⚠️ Verification token already consumed, ignoring.');
+        return null;
+      }
+      throw error;
+    }
+  },
+};
+
 export const authOptions: NextAuthOptions = {
-  adapter: PrismaAdapter(prisma) as any,
+  adapter: adapter as any,
   debug: true, // Always debug for now
   logger: {
     error(code, ...message) {
