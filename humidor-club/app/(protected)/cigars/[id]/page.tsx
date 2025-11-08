@@ -84,6 +84,11 @@ export default function CigarDetailPage({ params }: PageParams) {
           credentials: 'include',
         });
         const json: ApiResponse = await response.json();
+        if (response.status === 401) {
+          const callback = encodeURIComponent(window.location.pathname);
+          window.location.href = `/sign-in?callbackUrl=${callback}`;
+          return;
+        }
         if (!response.ok || !json.success) {
           throw new Error(json.success ? 'Failed to load cigar' : json.error);
         }
