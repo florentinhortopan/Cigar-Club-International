@@ -8,7 +8,9 @@ import { storeMagicLink } from '@/lib/magic-link-store';
 
 // Set trustHost for Vercel (required for NextAuth v4+ on serverless)
 if (process.env.VERCEL) {
-  process.env.NEXTAUTH_URL = process.env.NEXTAUTH_URL || 'https://cigar-club-international.vercel.app';
+  if (!process.env.NEXTAUTH_URL) {
+    console.warn('⚠️ NEXTAUTH_URL not set; falling back to production domain should be configured via env.');
+  }
 }
 
 const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null;
