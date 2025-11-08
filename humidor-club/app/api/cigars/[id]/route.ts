@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/app/api/auth/[...nextauth]/route';
 import { prisma } from '@/lib/prisma';
-import { getPairingsByCigar } from '@/lib/prisma-queries';
+import { getPairingsByCigar, updateCigar, type CreateCigarInput } from '@/lib/prisma-queries';
 
 export const dynamic = 'force-dynamic';
 
@@ -115,60 +115,13 @@ export async function GET(
   }
 }
 
-import { NextRequest, NextResponse } from 'next/server';
-import { getCigarById, updateCigar, type CreateCigarInput } from '@/lib/prisma-queries';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/app/api/auth/[...nextauth]/route';
-
-export async function GET(
-  request: NextRequest,
-  context: { params: Promise<{ id: string }> }
-) {
-  try {
-    const { id } = await context.params;
-    const cigar = await getCigarById(id);
-    
-    if (!cigar) {
-      return NextResponse.json(
-        { success: false, error: 'Cigar not found' },
-        { status: 404 }
-      );
-    }
-    
-    // Include line and brand relations
-    const { prisma } = await import('@/lib/prisma');
-    const cigarWithRelations = await prisma.cigar.findUnique({
-      where: { id },
-      include: {
-        line: {
-          include: {
-            brand: true,
-          },
-        },
-      },
-    });
-    
-    return NextResponse.json({
-      success: true,
-      cigar: cigarWithRelations,
-    });
-  } catch (error) {
-    console.error('Error in GET /api/cigars/[id]:', error);
-    return NextResponse.json(
-      { success: false, error: 'Failed to fetch cigar' },
-      { status: 500 }
-    );
-  }
-}
-
 export async function PATCH(
   request: NextRequest,
   context: { params: Promise<{ id: string }> }
 ) {
   try {
     const { id } = await context.params;
-    
-    // Check authentication
+
     const session = await getServerSession(authOptions);
     if (!session) {
       return NextResponse.json(
@@ -176,10 +129,9 @@ export async function PATCH(
         { status: 401 }
       );
     }
-    
+
     const body = await request.json();
-    
-    // Build update input
+
     const updateInput: Partial<CreateCigarInput> = {};
     if (body.line !== undefined) updateInput.line = body.line;
     if (body.vitola !== undefined) updateInput.vitola = body.vitola;
@@ -196,11 +148,11 @@ export async function PATCH(
     if (body.typical_street_cents !== undefined) updateInput.typical_street_cents = body.typical_street_cents;
     if (body.country !== undefined) updateInput.country = body.country;
     if (body.factory !== undefined) updateInput.factory = body.factory;
-    
+
     console.log('📝 Updating cigar:', id, 'with:', updateInput);
     const updatedCigar = await updateCigar(id, updateInput);
     console.log('✅ Cigar updated:', updatedCigar);
-    
+
     return NextResponse.json({
       success: true,
       cigar: updatedCigar,
@@ -208,8 +160,8 @@ export async function PATCH(
   } catch (error: any) {
     console.error('❌ Error in PATCH /api/cigars/[id]:', error);
     return NextResponse.json(
-      { 
-        success: false, 
+      {
+        success: false,
         error: error.message || 'Failed to update cigar',
         details: process.env.NODE_ENV === 'development' ? error.stack : undefined,
       },
