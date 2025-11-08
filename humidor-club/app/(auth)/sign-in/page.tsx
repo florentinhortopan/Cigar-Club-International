@@ -4,11 +4,18 @@ import { Cigarette, Mail, Loader2 } from 'lucide-react';
 import Link from 'next/link';
 import { signIn } from 'next-auth/react';
 import { useState, FormEvent } from 'react';
+import { useSearchParams } from 'next/navigation';
 
 export default function SignInPage() {
+  const searchParams = useSearchParams();
   const [email, setEmail] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
+
+  const callbackUrl = searchParams.get('callbackUrl') || undefined;
+  const branchName = searchParams.get('branchName');
+  const branchSlug = searchParams.get('branchSlug');
+  const branchId = searchParams.get('branchId');
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -21,6 +28,7 @@ export default function SignInPage() {
       const result = await signIn('email', {
         email,
         redirect: false,
+        callbackUrl,
       });
 
       console.log('🔵 Sign in result:', result);
@@ -32,7 +40,13 @@ export default function SignInPage() {
       } else if (result?.ok) {
         console.log('✅ Sign in successful, redirecting...');
         // Success - redirect to verify page with email
-        window.location.href = `/auth/verify-request?email=${encodeURIComponent(email)}`;
+        const params = new URLSearchParams();
+        params.set('email', email);
+        if (branchName) params.set('branchName', branchName);
+        if (branchSlug) params.set('branchSlug', branchSlug);
+        if (branchId) params.set('branchId', branchId);
+        if (callbackUrl) params.set('callbackUrl', callbackUrl);
+        window.location.href = `/auth/verify-request?${params.toString()}`;
       } else {
         console.log('⚠️ Unexpected result:', result);
         setError('Unexpected response. Please try again.');
@@ -63,6 +77,19 @@ export default function SignInPage() {
 
         {/* Sign In Form */}
         <div className="bg-card border rounded-xl p-8 space-y-6">
+          {branchName && (
+            <div className="rounded-lg border border-primary/20 bg-primary/5 p-4 text-sm text-primary">
+              Joining <span className="font-semibold">{branchName}</span>
+              {branchSlug ? (
+                <>
+                  {' '}
+                  — you'll be connected with members and events from this branch once you sign in.
+                </>
+              ) : (
+                '.'
+              )}
+            </div>
+          )}
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
               <label htmlFor="email" className="text-sm font-medium">

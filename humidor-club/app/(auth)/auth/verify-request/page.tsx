@@ -8,6 +8,10 @@ import { useSearchParams } from 'next/navigation';
 function VerifyRequestContent() {
   const searchParams = useSearchParams();
   const email = searchParams.get('email');
+  const branchName = searchParams.get('branchName');
+  const branchSlug = searchParams.get('branchSlug');
+  const branchId = searchParams.get('branchId');
+  const callbackUrl = searchParams.get('callbackUrl');
   const [magicLink, setMagicLink] = useState<string | null>(null);
   const [countdown, setCountdown] = useState(8);
   const [loading, setLoading] = useState(true);
@@ -69,6 +73,11 @@ function VerifyRequestContent() {
 
         {/* Instructions */}
         <div className="bg-card border rounded-xl p-8 space-y-6">
+          {branchName && (
+            <div className="rounded-lg border border-primary/20 bg-primary/5 p-4 text-sm text-primary">
+              Magic link on its way! Once you sign in, we’ll connect you with the <span className="font-semibold">{branchName}</span> branch community.
+            </div>
+          )}
           <div className="space-y-4">
             <div className="flex items-start gap-3">
               <div className="flex-shrink-0 w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center text-sm font-semibold text-primary mt-0.5">
@@ -150,12 +159,22 @@ function VerifyRequestContent() {
               {loading ? 'Loading magic link...' : !magicLink ? 'Didn\'t receive the email?' : 'Need another link?'}
             </p>
             <div className="flex flex-col gap-2">
+              {(() => {
+                const retryParams = new URLSearchParams();
+                if (callbackUrl) retryParams.set('callbackUrl', callbackUrl);
+                if (branchId) retryParams.set('branchId', branchId);
+                if (branchSlug) retryParams.set('branchSlug', branchSlug);
+                if (branchName) retryParams.set('branchName', branchName);
+                const retryHref = retryParams.toString() ? `/sign-in?${retryParams.toString()}` : '/sign-in';
+                return (
               <Link
-                href="/sign-in"
+                href={retryHref}
                 className="text-center bg-primary text-primary-foreground font-semibold py-3 px-4 rounded-lg hover:bg-primary/90 transition-colors min-h-[48px] flex items-center justify-center"
               >
                 Try again
               </Link>
+                );
+              })()}
               <Link
                 href="/"
                 className="text-center border font-semibold py-3 px-4 rounded-lg hover:bg-muted transition-colors min-h-[48px] flex items-center justify-center"

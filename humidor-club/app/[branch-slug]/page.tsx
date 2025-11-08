@@ -33,6 +33,13 @@ export default async function BranchPage({ params }: BranchPageProps) {
   }
 
   const memberCount = branch._count.members;
+  const joinParams = new URLSearchParams({
+    branchId: branch.id,
+    branchSlug: branch.slug,
+  });
+  if (branch.name) {
+    joinParams.set('branchName', branch.name);
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-background to-muted">
@@ -83,7 +90,7 @@ export default async function BranchPage({ params }: BranchPageProps) {
           {/* CTA Buttons */}
           <div className="flex flex-col sm:flex-row gap-4 w-full sm:w-auto min-w-[280px]">
             <Link
-              href="/sign-in"
+              href={`/join?${joinParams.toString()}`}
               className="inline-flex items-center justify-center rounded-lg bg-primary px-8 py-4 text-lg font-semibold text-primary-foreground hover:bg-primary/90 transition-colors min-h-[56px]"
             >
               Join This Branch
