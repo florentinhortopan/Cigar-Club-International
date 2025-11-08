@@ -1,12 +1,12 @@
 'use client';
 
+import { Suspense, useState, FormEvent } from 'react';
 import { Cigarette, Mail, Loader2 } from 'lucide-react';
 import Link from 'next/link';
 import { signIn } from 'next-auth/react';
-import { useState, FormEvent } from 'react';
 import { useSearchParams } from 'next/navigation';
 
-export default function SignInPage() {
+function SignInContent() {
   const searchParams = useSearchParams();
   const [email, setEmail] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -165,6 +165,23 @@ export default function SignInPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function SignInPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen flex items-center justify-center">
+          <div className="text-center space-y-4">
+            <div className="mx-auto h-12 w-12 animate-spin rounded-full border-b-2 border-primary" />
+            <p className="text-muted-foreground">Loading sign-in...</p>
+          </div>
+        </div>
+      }
+    >
+      <SignInContent />
+    </Suspense>
   );
 }
 

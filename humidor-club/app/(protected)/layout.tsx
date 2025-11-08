@@ -2,6 +2,9 @@ import { redirect } from 'next/navigation';
 import { getSession } from '@/lib/auth';
 import { ProtectedLayoutClient } from './layout-client';
 
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
 export default async function ProtectedLayout({ children }: { children: React.ReactNode }) {
   try {
     // Check authentication server-side
