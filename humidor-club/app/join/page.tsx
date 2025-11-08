@@ -11,13 +11,15 @@ interface JoinPageProps {
   };
 }
 
+const FALLBACK_ROUTE = '/dashboard';
+
 export default async function JoinPage({ searchParams }: JoinPageProps) {
   const branchId = searchParams?.branchId;
   const branchSlugParam = searchParams?.branchSlug;
   const branchNameParam = searchParams?.branchName;
 
   if (!branchId) {
-    redirect('/branches');
+    redirect(FALLBACK_ROUTE);
   }
 
   const session = await getServerSession(authOptions);
@@ -42,7 +44,7 @@ export default async function JoinPage({ searchParams }: JoinPageProps) {
   });
 
   if (!branch || !branch.is_active) {
-    redirect('/branches');
+    redirect(FALLBACK_ROUTE);
   }
 
   const user = await prisma.user.findUnique({
