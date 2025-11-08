@@ -1,59 +1,159 @@
+'use client';
+
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
-import { notFound } from 'next/navigation';
+import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/app/api/auth/[...nextauth]/route';
-import { prisma } from '@/lib/prisma';
-import { getPairingsByCigar } from '@/lib/prisma-queries';
 import PairingsPanel from './pairings-panel';
+import type { PairingKind } from '@/lib/prisma-queries';
 
-type CigarPageProps = {
-  params: {
-    id: string;
-  };
+type PageParams = {
+  params: { id: string };
 };
 
-export default async function CigarDetailPage({ params }: CigarPageProps) {
-  const rawId = params?.id;
-  const cigarId = Array.isArray(rawId) ? rawId[0] : rawId;
+type ApiPairing = {
+  id: string;
+  cigar_id: string;
+  user_id: string;
+  kind: PairingKind;
+  description: string;
+  image_url: string | null;
+  created_at: string;
+  author?: {
+    id: string;
+    name: string | null;
+    image: string | null;
+    branch?: {
+      id: string;
+      name: string;
+      city?: string | null;
+      region?: string | null;
+      country?: string | null;
+    } | null;
+  } | null;
+};
 
-  if (!cigarId || typeof cigarId !== 'string') {
-    notFound();
-  }
+type ApiCigar = {
+  id: string;
+  vitola: string;
+  ring_gauge?: number | null;
+  length_inches?: number | null;
+  wrapper?: string | null;
+  binder?: string | null;
+  filler?: string | null;
+  strength?: string | null;
+  body?: string | null;
+  msrp_cents?: number | null;
+  country?: string | null;
+  factory?: string | null;
+  image_urls?: string | null;
+  line?: {
+    id: string;
+    name: string;
+    brand?: {
+      id: string;
+      name: string;
+    } | null;
+  } | null;
+};
 
-  const session = await getServerSession(authOptions);
+type ApiResponse =
+  | {
+      success: true;
+      cigar: ApiCigar;
+      pairings: ApiPairing[];
+      currentUserId: string | null;
+    }
+  | { success: false; error: string };
 
-  const cigar = await prisma.cigar.findUnique({
-    where: { id: cigarId },
-    include: {
-      line: {
-        include: {
-          brand: true,
-        },
-      },
-    },
-  });
+export default function CigarDetailPage({ params }: PageParams) {
+  const cigarId = Array.isArray(params.id) ? params.id[0] : params.id;
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [data, setData] = useState<Extract<ApiResponse, { success: true }> | null>(null);
 
-  if (!cigar) {
-    notFound();
-  }
+  useEffect(() => {
+    let isMounted = true;
+    async function fetchData() {
+      setLoading(true);
+      setError(null);
+      try {
+        const response = await fetch(`/api/cigars/${cigarId}`, {
+          credentials: 'include',
+        });
+        const json: ApiResponse = await response.json();
+        if (!response.ok || !json.success) {
+          throw new Error(json.success ? 'Failed to load cigar' : json.error);
+        }
+        if (isMounted) {
+          setData(json);
+        }
+      } catch (err: any) {
+        if (isMounted) {
+          setError(err?.message || 'Failed to load cigar');
+        }
+      } finally {
+        if (isMounted) {
+          setLoading(false);
+        }
+      }
+    }
 
-  const pairings = await getPairingsByCigar(cigarId);
+    if (cigarId) {
+      fetchData();
+    } else {
+      setError('Invalid cigar id');
+      setLoading(false);
+    }
 
-  const heroImage = (() => {
-    if (!cigar.image_urls) {
+    return () => {
+      isMounted = false;
+    };
+  }, [cigarId]);
+
+  const heroImage = useMemo(() => {
+    if (!data?.cigar?.image_urls) {
       return null;
     }
     try {
-      const urls = JSON.parse(cigar.image_urls) as string[];
+      const urls = JSON.parse(data.cigar.image_urls) as string[];
       return Array.isArray(urls) && urls.length > 0 ? urls[0] : null;
     } catch {
       return null;
     }
-  })();
+  }, [data]);
+
+  if (loading) {
+    return (
+      <div className="flex h-full w-full items-center justify-center py-24">
+        <div className="text-center space-y-2">
+          <div className="mx-auto h-12 w-12 animate-spin rounded-full border-b-2 border-primary" />
+          <p className="text-sm text-muted-foreground">Loading cigar details…</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error || !data?.success) {
+    return (
+      <div className="space-y-6 py-24 text-center">
+        <h1 className="text-2xl font-semibold">Cigar not available</h1>
+        <p className="text-muted-foreground">
+          {error || 'We could not find this cigar. It may have been removed or you no longer have access.'}
+        </p>
+        <Link
+          href="/cigars"
+          className="inline-flex items-center justify-center rounded-lg bg-primary px-4 py-2 font-semibold text-primary-foreground hover:bg-primary/90"
+        >
+          Back to cigars
+        </Link>
+      </div>
+    );
+  }
+
+  const cigar = data.cigar;
 
   return (
     <div className="space-y-8">
@@ -111,31 +211,10 @@ export default async function CigarDetailPage({ params }: CigarPageProps) {
 
           <PairingsPanel
             cigarId={cigarId}
-            currentUserId={session?.user?.id}
-            initialPairings={pairings.map((pairing) => ({
-              id: pairing.id,
-              cigar_id: pairing.cigar_id,
-              user_id: pairing.user_id,
-              kind: pairing.kind,
-              description: pairing.description,
-              image_url: pairing.image_url ?? null,
-              created_at: pairing.created_at.toISOString(),
-              author: pairing.author
-                ? {
-                    id: pairing.author.id,
-                    name: pairing.author.name,
-                    image: pairing.author.image,
-                    branch: pairing.author.branch
-                      ? {
-                          id: pairing.author.branch.id,
-                          name: pairing.author.branch.name,
-                          city: pairing.author.branch.city,
-                          region: pairing.author.branch.region,
-                          country: pairing.author.branch.country,
-                        }
-                      : null,
-                  }
-                : undefined,
+            currentUserId={data.currentUserId}
+            initialPairings={data.pairings.map((pairing) => ({
+              ...pairing,
+              author: pairing.author ?? undefined,
             }))}
           />
         </div>
@@ -151,7 +230,7 @@ export default async function CigarDetailPage({ params }: CigarPageProps) {
                 Edit this cigar
               </Link>
               <Link
-                href={`/cigars`}
+                href="/cigars"
                 className="flex w-full items-center justify-center rounded-lg bg-primary px-4 py-2 font-semibold text-primary-foreground hover:bg-primary/90"
               >
                 Browse more cigars
