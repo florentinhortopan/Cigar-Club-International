@@ -11,6 +11,9 @@ interface JoinPageProps {
   };
 }
 
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
 const FALLBACK_ROUTE = '/dashboard';
 
 export default async function JoinPage({ searchParams }: JoinPageProps) {

@@ -175,70 +175,41 @@ export const authOptions: NextAuthOptions = {
     },
     async redirect({ url, baseUrl }) {
       console.log('🔀 Redirect callback:', { url, baseUrl });
-      
-      // Handle callbackUrl from middleware (but ignore if it's sign-in)
+
       try {
         const parsedUrl = new URL(url, baseUrl);
         const callbackUrl = parsedUrl.searchParams.get('callbackUrl');
         if (callbackUrl) {
           const decodedCallbackUrl = decodeURIComponent(callbackUrl);
           console.log('🔀 Found callbackUrl:', decodedCallbackUrl);
-          
-          // Ignore callbackUrl if it's pointing to sign-in or auth pages
-          if (decodedCallbackUrl.includes('/sign-in') || decodedCallbackUrl.includes('/auth/')) {
-            console.log('🔀 Ignoring sign-in callbackUrl, redirecting to dashboard');
+          if (decodedCallbackUrl.startsWith('/auth/') || decodedCallbackUrl.includes('/sign-in')) {
             return `${baseUrl}/dashboard`;
           }
-          
-          // Use callbackUrl if it's a valid destination
-          return decodedCallbackUrl.startsWith('/') ? `${baseUrl}${decodedCallbackUrl}` : decodedCallbackUrl;
+          if (decodedCallbackUrl.startsWith('/')) {
+            return `${baseUrl}${decodedCallbackUrl}`;
+          }
+          if (decodedCallbackUrl.startsWith(baseUrl)) {
+            return decodedCallbackUrl;
+          }
+          return `${baseUrl}/dashboard`;
         }
       } catch (e) {
         console.log('🔀 Error parsing URL:', e);
       }
-      
-      // If this is the email callback URL, always go to dashboard
-      if (url.includes('/api/auth/callback/email')) {
-        console.log('🔀 Email callback detected, redirecting to dashboard');
+
+      if (url.includes('/sign-in') || url.includes('/auth/verify-request')) {
+        console.log('🔀 Blocking redirect back to auth pages, sending to dashboard');
         return `${baseUrl}/dashboard`;
       }
-      
-      // Never redirect to sign-in or auth pages after successful authentication
-      if (url.includes('/sign-in') || url.includes('/auth/')) {
-        console.log('🔀 Blocking redirect to sign-in/auth, redirecting to dashboard');
-        return `${baseUrl}/dashboard`;
-      }
-      
-      // After sign in, always redirect to dashboard
-      if (url === baseUrl || url === `${baseUrl}/`) {
-        console.log('🔀 Redirecting to dashboard (default)');
-        return `${baseUrl}/dashboard`;
-      }
-      
-      // If it's a relative URL, check if it's a valid destination
-      if (url.startsWith("/")) {
-        // Don't allow redirecting to sign-in or auth pages
-        if (url.includes('/sign-in') || url.includes('/auth/')) {
-          console.log('🔀 Blocking relative redirect to sign-in/auth, redirecting to dashboard');
-          return `${baseUrl}/dashboard`;
-        }
-        console.log('🔀 Redirecting to relative URL:', url);
+
+      if (url.startsWith('/')) {
         return `${baseUrl}${url}`;
       }
-      
-      // If it's an absolute URL on the same origin, check if it's valid
+
       if (url.startsWith(baseUrl)) {
-        // Don't allow redirecting to sign-in or auth pages
-        if (url.includes('/sign-in') || url.includes('/auth/')) {
-          console.log('🔀 Blocking absolute redirect to sign-in/auth, redirecting to dashboard');
-          return `${baseUrl}/dashboard`;
-        }
-        console.log('🔀 Redirecting to same-origin URL:', url);
         return url;
       }
-      
-      // Otherwise, redirect to dashboard
-      console.log('🔀 Redirecting to dashboard (fallback)');
+
       return `${baseUrl}/dashboard`;
     },
     async session({ session, token, user }) {
