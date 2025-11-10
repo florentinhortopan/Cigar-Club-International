@@ -52,7 +52,7 @@ const BODY_OPTIONS = ['Light', 'Medium-Light', 'Medium', 'Medium-Full', 'Full'];
 export default function EditCigarPage() {
   const router = useRouter();
   const params = useParams();
-  const cigarId = params.id as string;
+  const cigarId = Array.isArray(params.id) ? params.id[0] : (params.id as string | undefined);
 
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -102,8 +102,12 @@ export default function EditCigarPage() {
 
   // Load cigar data
   useEffect(() => {
-    fetchCigar();
-    fetchBrandSuggestions();
+    if (cigarId) {
+      fetchCigar();
+      fetchBrandSuggestions();
+    } else {
+      setLoading(false);
+    }
   }, [cigarId]);
 
   // Load lines when brand changes
@@ -286,12 +290,21 @@ export default function EditCigarPage() {
   };
 
   const fetchCigar = async () => {
+    if (!cigarId) {
+      setLoading(false);
+      return;
+    }
+    
     try {
       setLoading(true);
       const response = await fetch(`/api/cigars/${cigarId}`);
       const data = await response.json();
       
-      if (data.success && data.cigar) {
+      if (!response.ok || !data.success) {
+        throw new Error(data.error || 'Failed to load cigar');
+      }
+      
+      if (data.cigar) {
         setCigar(data.cigar);
         
         if (data.cigar.line) {
@@ -330,10 +343,13 @@ export default function EditCigarPage() {
             setImages([]);
           }
         }
+      } else {
+        throw new Error('Cigar data not found');
       }
     } catch (error) {
       console.error('Error fetching cigar:', error);
-      alert('Failed to load cigar data');
+      setCigar(null);
+      alert(error instanceof Error ? error.message : 'Failed to load cigar data');
     } finally {
       setLoading(false);
     }
@@ -387,6 +403,12 @@ export default function EditCigarPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    if (!cigarId) {
+      alert('Invalid cigar ID');
+      return;
+    }
+    
     setSaving(true);
 
     try {

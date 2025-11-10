@@ -1,17 +1,11 @@
 'use client';
 
-export const dynamic = 'force-dynamic';
-export const revalidate = 0;
-
 import { useEffect, useMemo, useState } from 'react';
+import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
 import PairingsPanel from './pairings-panel';
 import type { PairingKind } from '@/lib/prisma-queries';
-
-type PageParams = {
-  params: { id: string };
-};
 
 type ApiPairing = {
   id: string;
@@ -68,13 +62,20 @@ type ApiResponse =
     }
   | { success: false; error: string };
 
-export default function CigarDetailPage({ params }: PageParams) {
-  const cigarId = Array.isArray(params.id) ? params.id[0] : params.id;
+export default function CigarDetailPage() {
+  const params = useParams();
+  const cigarId = Array.isArray(params.id) ? params.id[0] : (params.id as string | undefined);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [data, setData] = useState<Extract<ApiResponse, { success: true }> | null>(null);
 
   useEffect(() => {
+    if (!cigarId) {
+      setError('Invalid cigar id');
+      setLoading(false);
+      return;
+    }
+
     let isMounted = true;
     async function fetchData() {
       setLoading(true);
@@ -106,12 +107,7 @@ export default function CigarDetailPage({ params }: PageParams) {
       }
     }
 
-    if (cigarId) {
-      fetchData();
-    } else {
-      setError('Invalid cigar id');
-      setLoading(false);
-    }
+    fetchData();
 
     return () => {
       isMounted = false;
@@ -215,7 +211,7 @@ export default function CigarDetailPage({ params }: PageParams) {
           </div>
 
           <PairingsPanel
-            cigarId={cigarId}
+            cigarId={cigar.id}
             currentUserId={data.currentUserId}
             initialPairings={data.pairings.map((pairing) => ({
               ...pairing,
@@ -229,7 +225,7 @@ export default function CigarDetailPage({ params }: PageParams) {
             <h3 className="text-lg font-semibold mb-4">Quick Actions</h3>
             <div className="space-y-3">
               <Link
-                href={`/cigars/${cigarId}/edit`}
+                href={`/cigars/${cigar.id}/edit`}
                 className="flex w-full items-center justify-center rounded-lg border px-4 py-2 font-semibold hover:bg-muted"
               >
                 Edit this cigar
