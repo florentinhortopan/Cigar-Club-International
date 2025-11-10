@@ -1,7 +1,8 @@
 'use client';
 
-import { Cigarette, Package, TrendingUp, Users } from 'lucide-react';
+import { Cigarette, Package, TrendingUp, Users, Wine, UserPlus, Plus } from 'lucide-react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { useEffect, useState } from 'react';
 
 interface DashboardStats {
@@ -22,6 +23,20 @@ interface Branch {
   country?: string | null;
 }
 
+interface Activity {
+  type: 'pairing' | 'user_joined' | 'cigar_added' | 'humidor_added';
+  id: string;
+  title: string;
+  description: string;
+  link?: string;
+  user?: {
+    id: string;
+    name: string | null;
+    image: string | null;
+  };
+  createdAt: string;
+}
+
 export default function DashboardPage() {
   const [stats, setStats] = useState<DashboardStats>({
     totalCigarsInClub: 0,
@@ -34,10 +49,13 @@ export default function DashboardPage() {
   });
   const [loading, setLoading] = useState(true);
   const [branch, setBranch] = useState<Branch | null>(null);
+  const [activities, setActivities] = useState<Activity[]>([]);
+  const [loadingActivities, setLoadingActivities] = useState(true);
 
   useEffect(() => {
     fetchStats();
     fetchUserBranch();
+    fetchActivities();
   }, []);
 
   const fetchStats = async () => {
@@ -86,6 +104,33 @@ export default function DashboardPage() {
 
   const formatCurrency = (cents: number) => {
     return `$${(cents / 100).toFixed(2)}`;
+  };
+
+  const fetchActivities = async () => {
+    try {
+      setLoadingActivities(true);
+      const response = await fetch('/api/dashboard/activity');
+      const data = await response.json();
+      
+      if (data.success) {
+        setActivities(data.activities || []);
+      }
+    } catch (error) {
+      console.error('Error fetching activities:', error);
+    } finally {
+      setLoadingActivities(false);
+    }
+  };
+
+  const formatTimeAgo = (date: Date) => {
+    const now = new Date();
+    const diffInSeconds = Math.floor((now.getTime() - new Date(date).getTime()) / 1000);
+    
+    if (diffInSeconds < 60) return 'just now';
+    if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)}m ago`;
+    if (diffInSeconds < 86400) return `${Math.floor(diffInSeconds / 3600)}h ago`;
+    if (diffInSeconds < 604800) return `${Math.floor(diffInSeconds / 86400)}d ago`;
+    return `${Math.floor(diffInSeconds / 604800)}w ago`;
   };
 
   return (
@@ -205,11 +250,104 @@ export default function DashboardPage() {
       {/* Recent Activity */}
       <div className="bg-card border rounded-xl p-6">
         <h2 className="text-xl font-semibold mb-4">Recent Activity</h2>
-        <div className="text-center py-12 text-muted-foreground">
-          <p>No activity yet. Start by adding cigars to your humidor!</p>
-        </div>
+        {loadingActivities ? (
+          <div className="text-center py-12 text-muted-foreground">
+            <p>Loading activities...</p>
+          </div>
+        ) : activities.length === 0 ? (
+          <div className="text-center py-12 text-muted-foreground">
+            <p>No activity yet. Start by adding cigars to your humidor!</p>
+          </div>
+        ) : (
+          <div className="space-y-4">
+            {activities.map((activity) => (
+              <ActivityItem key={activity.id} activity={activity} formatTimeAgo={formatTimeAgo} />
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );
+}
+
+function ActivityItem({ activity, formatTimeAgo }: { activity: Activity; formatTimeAgo: (date: Date) => string }) {
+  const getIcon = () => {
+    switch (activity.type) {
+      case 'pairing':
+        return <Wine className="h-4 w-4" />;
+      case 'user_joined':
+        return <UserPlus className="h-4 w-4" />;
+      case 'cigar_added':
+        return <Cigarette className="h-4 w-4" />;
+      case 'humidor_added':
+        return <Package className="h-4 w-4" />;
+      default:
+        return <Plus className="h-4 w-4" />;
+    }
+  };
+
+  const getColorClass = () => {
+    switch (activity.type) {
+      case 'pairing':
+        return 'bg-blue-500/10 text-blue-600 dark:text-blue-400';
+      case 'user_joined':
+        return 'bg-green-500/10 text-green-600 dark:text-green-400';
+      case 'cigar_added':
+        return 'bg-purple-500/10 text-purple-600 dark:text-purple-400';
+      case 'humidor_added':
+        return 'bg-orange-500/10 text-orange-600 dark:text-orange-400';
+      default:
+        return 'bg-muted text-muted-foreground';
+    }
+  };
+
+  const content = (
+    <div className="flex items-start gap-3 p-3 rounded-lg hover:bg-muted/50 transition-colors">
+      <div className={`p-2 rounded-lg ${getColorClass()}`}>
+        {getIcon()}
+      </div>
+      <div className="flex-1 min-w-0">
+        <div className="flex items-start justify-between gap-2">
+          <div className="flex-1">
+            <p className="font-medium text-sm">{activity.title}</p>
+            <p className="text-sm text-muted-foreground mt-1">{activity.description}</p>
+          </div>
+          <span className="text-xs text-muted-foreground whitespace-nowrap">
+            {formatTimeAgo(new Date(activity.createdAt))}
+          </span>
+        </div>
+        {activity.user && (
+          <div className="flex items-center gap-2 mt-2">
+            {activity.user.image ? (
+              <Image
+                src={activity.user.image}
+                alt={activity.user.name || 'User'}
+                width={20}
+                height={20}
+                className="rounded-full"
+              />
+            ) : (
+              <div className="w-5 h-5 rounded-full bg-muted flex items-center justify-center">
+                <Users className="h-3 w-3 text-muted-foreground" />
+              </div>
+            )}
+            <span className="text-xs text-muted-foreground">
+              {activity.user.name || 'Unknown user'}
+            </span>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+
+  if (activity.link) {
+    return (
+      <Link href={activity.link} className="block">
+        {content}
+      </Link>
+    );
+  }
+
+  return content;
 }
 

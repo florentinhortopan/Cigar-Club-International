@@ -12,6 +12,7 @@ import {
   LayoutGrid,
   Rows,
   List,
+  Wine,
 } from 'lucide-react';
 import { useEffect, useState, type ReactNode } from 'react';
 import Image from 'next/image';
@@ -29,6 +30,7 @@ interface Cigar {
   msrp_cents?: number | null;
   image_urls?: string | null; // JSON string from DB
   isInMyHumidor?: boolean; // Added flag
+  pairingCount?: number; // Number of pairings for this cigar
   line?: {
     id: string;
     name: string;
@@ -240,9 +242,14 @@ export default function CigarsPage() {
                         />
                       </div>
 
-                      {cigar.isInMyHumidor && (
-                        <HumidorBadge />
-                      )}
+                      <div className="flex flex-wrap gap-2 mb-2">
+                        {cigar.isInMyHumidor && (
+                          <HumidorBadge />
+                        )}
+                        {cigar.pairingCount && cigar.pairingCount > 0 && (
+                          <PairingBadge count={cigar.pairingCount} />
+                        )}
+                      </div>
 
                       <div className="space-y-2 text-sm text-muted-foreground">
                         {cigar.ring_gauge && cigar.length_inches && (
@@ -333,7 +340,12 @@ export default function CigarsPage() {
                         />
                       </div>
 
-                      {cigar.isInMyHumidor && <HumidorBadge />}
+                      <div className="flex flex-wrap gap-2 mb-2">
+                        {cigar.isInMyHumidor && <HumidorBadge />}
+                        {cigar.pairingCount && cigar.pairingCount > 0 && (
+                          <PairingBadge count={cigar.pairingCount} />
+                        )}
+                      </div>
 
                       <div className="grid gap-2 text-sm sm:grid-cols-2 lg:grid-cols-3 text-muted-foreground">
                         <Detail label="Dimensions">
@@ -412,6 +424,9 @@ export default function CigarsPage() {
                             <Check className="h-3 w-3" />
                             In humidor
                           </span>
+                        )}
+                        {cigar.pairingCount && cigar.pairingCount > 0 && (
+                          <PairingBadge count={cigar.pairingCount} compact />
                         )}
                         <CigarActions
                           cigar={cigar}
@@ -493,9 +508,27 @@ function Detail({ label, children }: { label: string; children: ReactNode }) {
 
 function HumidorBadge() {
   return (
-    <div className="mb-2 inline-flex items-center gap-1 rounded-full bg-primary/10 px-2 py-1 text-xs text-primary">
+    <div className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-2 py-1 text-xs text-primary">
       <Check className="h-3 w-3" />
       <span>In my humidor</span>
+    </div>
+  );
+}
+
+function PairingBadge({ count, compact }: { count: number; compact?: boolean }) {
+  if (compact) {
+    return (
+      <span className="inline-flex items-center gap-1 rounded-full bg-blue-500/10 px-2 py-1 text-xs text-blue-600 dark:text-blue-400">
+        <Wine className="h-3 w-3" />
+        <span>{count}</span>
+      </span>
+    );
+  }
+  
+  return (
+    <div className="inline-flex items-center gap-1 rounded-full bg-blue-500/10 px-2 py-1 text-xs text-blue-600 dark:text-blue-400">
+      <Wine className="h-3 w-3" />
+      <span>{count} pairing{count !== 1 ? 's' : ''}</span>
     </div>
   );
 }

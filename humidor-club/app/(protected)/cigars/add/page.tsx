@@ -538,7 +538,7 @@ export default function AddCigarPage() {
                     className="w-full p-3 rounded-lg border bg-background focus:outline-none focus:ring-2 focus:ring-primary"
                   />
                   {showBrandSuggestions && (
-                    <div className="absolute z-30 mt-2 max-h-60 w-full overflow-y-auto rounded-lg border border-border bg-background shadow-xl">
+                    <div className="absolute z-30 mt-2 max-h-60 w-full overflow-y-auto rounded-lg border border-border !bg-popover shadow-xl">
                       {brandSuggestions.length > 0 ? (
                         <div className="py-1">
                           {brandSuggestions.map((option) => (
@@ -604,7 +604,7 @@ export default function AddCigarPage() {
                     className="w-full p-3 rounded-lg border bg-background focus:outline-none focus:ring-2 focus:ring-primary disabled:opacity-50"
                   />
                   {showLineSuggestions && selectedBrandId && (
-                    <div className="absolute z-30 mt-2 max-h-60 w-full overflow-y-auto rounded-lg border border-border bg-background shadow-xl">
+                    <div className="absolute z-30 mt-2 max-h-60 w-full overflow-y-auto rounded-lg border border-border !bg-popover shadow-xl">
                       {lineSuggestions.length > 0 ? (
                         <div className="py-1">
                           {lineSuggestions.map((option) => (
@@ -679,7 +679,7 @@ export default function AddCigarPage() {
                       className="w-full p-3 rounded-lg border bg-background focus:outline-none focus:ring-2 focus:ring-primary"
                     />
                     {showVitolaSuggestions && vitolaSuggestions.length > 0 && (
-                      <div className="absolute z-30 mt-2 max-h-48 w-full overflow-y-auto rounded-lg border border-border bg-background shadow-xl">
+                      <div className="absolute z-30 mt-2 max-h-48 w-full overflow-y-auto rounded-lg border border-border !bg-popover shadow-xl">
                         <div className="py-1">
                           {vitolaSuggestions.map((option) => (
                             <button
@@ -752,7 +752,7 @@ export default function AddCigarPage() {
                       className="w-full p-3 rounded-lg border bg-background focus:outline-none focus:ring-2 focus:ring-primary"
                     />
                     {showCountrySuggestions && countrySuggestions.length > 0 && (
-                      <div className="absolute z-30 mt-2 max-h-48 w-full overflow-y-auto rounded-lg border border-border bg-background shadow-xl">
+                      <div className="absolute z-30 mt-2 max-h-48 w-full overflow-y-auto rounded-lg border border-border !bg-popover shadow-xl">
                         <div className="py-1">
                           {countrySuggestions.map((option) => (
                             <button
@@ -823,7 +823,7 @@ export default function AddCigarPage() {
                       className="w-full p-3 rounded-lg border bg-background focus:outline-none focus:ring-2 focus:ring-primary"
                     />
                     {showWrapperSuggestions && wrapperSuggestions.length > 0 && (
-                      <div className="absolute z-30 mt-2 max-h-48 w-full overflow-y-auto rounded-lg border border-border bg-background shadow-xl">
+                      <div className="absolute z-30 mt-2 max-h-48 w-full overflow-y-auto rounded-lg border border-border !bg-popover shadow-xl">
                         <div className="py-1">
                           {wrapperSuggestions.map((option) => (
                             <button
@@ -864,7 +864,7 @@ export default function AddCigarPage() {
                       className="w-full p-3 rounded-lg border bg-background focus:outline-none focus:ring-2 focus:ring-primary"
                     />
                     {showBinderSuggestions && binderSuggestions.length > 0 && (
-                      <div className="absolute z-30 mt-2 max-h-48 w-full overflow-y-auto rounded-lg border border-border bg-background shadow-xl">
+                      <div className="absolute z-30 mt-2 max-h-48 w-full overflow-y-auto rounded-lg border border-border !bg-popover shadow-xl">
                         <div className="py-1">
                           {binderSuggestions.map((option) => (
                             <button
@@ -905,7 +905,7 @@ export default function AddCigarPage() {
                       className="w-full p-3 rounded-lg border bg-background focus:outline-none focus:ring-2 focus:ring-primary"
                     />
                     {showFillerSuggestions && fillerSuggestions.length > 0 && (
-                      <div className="absolute z-30 mt-2 max-h-48 w-full overflow-y-auto rounded-lg border border-border bg-background shadow-xl">
+                      <div className="absolute z-30 mt-2 max-h-48 w-full overflow-y-auto rounded-lg border border-border !bg-popover shadow-xl">
                         <div className="py-1">
                           {fillerSuggestions.map((option) => (
                             <button

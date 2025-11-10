@@ -51,15 +51,37 @@ export async function GET(request: Request) {
       humidorCigarIds = humidorItems.map(item => item.cigar_id);
     }
     
-    // Add isInMyHumidor flag to each cigar
-    const cigarsWithHumidorStatus = cigars.map(cigar => ({
+    // Get pairing counts for all cigars in one query (only if we have cigars)
+    const cigarIds = cigars.map(c => c.id);
+    const pairingCountMap = new Map<string, number>();
+    
+    if (cigarIds.length > 0) {
+      const pairingCounts = await prisma.pairing.groupBy({
+        by: ['cigar_id'],
+        where: {
+          cigar_id: { in: cigarIds },
+        },
+        _count: {
+          id: true,
+        },
+      });
+      
+      // Create a map of cigar_id to pairing count
+      pairingCounts.forEach(p => {
+        pairingCountMap.set(p.cigar_id, p._count.id);
+      });
+    }
+    
+    // Add isInMyHumidor flag and pairing count to each cigar
+    const cigarsWithStatus = cigars.map(cigar => ({
       ...cigar,
       isInMyHumidor: humidorCigarIds.includes(cigar.id),
+      pairingCount: pairingCountMap.get(cigar.id) || 0,
     }));
     
     return NextResponse.json({
       success: true,
-      cigars: cigarsWithHumidorStatus,
+      cigars: cigarsWithStatus,
     });
   } catch (error) {
     console.error('Error in GET /api/cigars:', error);
