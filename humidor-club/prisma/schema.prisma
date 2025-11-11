@@ -54,6 +54,8 @@ model User {
   created_branches Branch[]  @relation("BranchCreator") // Branches created by this user
   pairings         Pairing[]
   activities       Activity[]
+  listings         Listing[]
+  humidorItems     HumidorItem[]
 
   @@index([branch_id])
 }
@@ -164,6 +166,7 @@ model Cigar {
   releases      Release[]
   humidorItems  HumidorItem[]
   pairings      Pairing[]
+  listings      Listing[]
 
   @@index([line_id])
 }
@@ -202,14 +205,20 @@ model HumidorItem {
   acquired_from        String? // e.g., "Retail", "Trade", "Gift"
   smoked_count         Int       @default(0) // Number of cigars smoked from this item
   last_smoked_date     DateTime? // Date when the last cigar was smoked
+  // Marketplace fields
+  available_for_sale   Int       @default(0) // Quantity available for sale (0 = not available)
+  available_for_trade  Int       @default(0) // Quantity available for trade (0 = not available)
   created_at           DateTime  @default(now())
   updated_at           DateTime  @updatedAt
 
+  user  User  @relation(fields: [user_id], references: [id], onDelete: Cascade)
   cigar Cigar @relation(fields: [cigar_id], references: [id], onDelete: Cascade)
 
   @@index([user_id])
   @@index([cigar_id])
   @@index([last_smoked_date])
+  @@index([available_for_sale])
+  @@index([available_for_trade])
 }
 
 enum PairingKind {
@@ -257,4 +266,73 @@ model Activity {
   @@index([user_id])
   @@index([created_at])
   @@index([type])
+}
+
+// =============================================================================
+// MARKETPLACE
+// =============================================================================
+
+enum ListingType {
+  WTS // Want to Sell
+  WTB // Want to Buy
+  WTT // Want to Trade
+}
+
+enum ListingStatus {
+  DRAFT
+  ACTIVE
+  PENDING
+  SOLD
+  WITHDRAWN
+  FROZEN
+}
+
+model Listing {
+  id          String        @id @default(cuid())
+  user_id     String
+  user        User          @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  
+  type        ListingType
+  title       String
+  description String        @db.Text
+  
+  // Reference to cigar (optional - can list without specific cigar)
+  cigar_id    String?
+  cigar       Cigar?        @relation(fields: [cigar_id], references: [id], onDelete: SetNull)
+  humidor_item_id String? // Optional: link to humidor item if listing from humidor
+  
+  // Details
+  qty         Int
+  condition   String?
+  price_cents Int? // In cents, required for WTS, optional for WTT
+  currency    String        @default("USD")
+  
+  // Location & Shipping
+  region      String?
+  city        String?
+  meet_up_only Boolean      @default(true)
+  will_ship   Boolean       @default(false)
+  
+  // Status
+  status      ListingStatus @default(DRAFT)
+  published_at DateTime?
+  sold_at     DateTime?
+  frozen_at   DateTime?
+  frozen_reason String?
+  
+  // Media (store image URLs as JSON array)
+  image_urls  String? // JSON array of image URLs
+  
+  // Metrics
+  view_count  Int           @default(0)
+  
+  created_at  DateTime      @default(now())
+  updated_at  DateTime      @updatedAt
+  
+  @@index([user_id, status])
+  @@index([status, published_at])
+  @@index([type, status])
+  @@index([cigar_id])
+  @@index([humidor_item_id])
+  @@index([region, status])
 }

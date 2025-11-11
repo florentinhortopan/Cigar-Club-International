@@ -146,7 +146,7 @@ export default function DashboardPage() {
       {/* Stats Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         {/* Stat Card 1 - Humidor */}
-        <div className="bg-card border rounded-xl p-6 space-y-2">
+        <Link href="/humidor" className="bg-card border rounded-xl p-6 space-y-2 hover:bg-muted/50 transition-colors cursor-pointer block">
           <div className="flex items-center justify-between">
             <div className="p-2 rounded-lg bg-primary/10">
               <Package className="h-5 w-5 text-primary" />
@@ -162,10 +162,10 @@ export default function DashboardPage() {
               </p>
             )}
           </div>
-        </div>
+        </Link>
 
         {/* Stat Card 2 - Club Cigars */}
-        <div className="bg-card border rounded-xl p-6 space-y-2">
+        <Link href="/cigars" className="bg-card border rounded-xl p-6 space-y-2 hover:bg-muted/50 transition-colors cursor-pointer block">
           <div className="flex items-center justify-between">
             <div className="p-2 rounded-lg bg-primary/10">
               <Cigarette className="h-5 w-5 text-primary" />
@@ -181,7 +181,7 @@ export default function DashboardPage() {
               </p>
             )}
           </div>
-        </div>
+        </Link>
 
         {/* Stat Card 3 - Marketplace */}
         <div className="bg-card border rounded-xl p-6 space-y-2">
