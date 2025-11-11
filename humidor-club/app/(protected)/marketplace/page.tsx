@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
 import { TrendingUp, Plus, Filter, DollarSign, Package, RefreshCw, MapPin, Eye } from 'lucide-react';
@@ -42,23 +43,35 @@ interface Listing {
 }
 
 export default function MarketplacePage() {
+  const searchParams = useSearchParams();
   const [listings, setListings] = useState<Listing[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<'all' | 'WTS' | 'WTB' | 'WTT'>('all');
   const [total, setTotal] = useState(0);
+  
+  // Get cigar_id from URL params if present
+  const cigarId = searchParams.get('cigar_id');
 
   useEffect(() => {
     fetchListings();
-  }, [activeTab]);
+  }, [activeTab, cigarId]);
 
   const fetchListings = async () => {
     try {
       setLoading(true);
       const type = activeTab === 'all' ? null : activeTab;
-      const url = type 
-        ? `/api/listings?type=${type}&status=ACTIVE`
-        : '/api/listings?status=ACTIVE';
+      const params = new URLSearchParams();
+      params.append('status', 'ACTIVE');
       
+      if (type) {
+        params.append('type', type);
+      }
+      
+      if (cigarId) {
+        params.append('cigar_id', cigarId);
+      }
+      
+      const url = `/api/listings?${params.toString()}`;
       const response = await fetch(url);
       const data = await response.json();
       
@@ -136,8 +149,18 @@ export default function MarketplacePage() {
         <div>
           <h1 className="text-3xl font-bold">Marketplace</h1>
           <p className="text-muted-foreground mt-2">
-            Buy, sell, and trade with the community
+            {cigarId 
+              ? 'Listings for this cigar'
+              : 'Buy, sell, and trade with the community'}
           </p>
+          {cigarId && (
+            <Link
+              href="/marketplace"
+              className="text-sm text-primary hover:underline mt-1 inline-block"
+            >
+              ← Show all listings
+            </Link>
+          )}
         </div>
         <div className="flex gap-2">
           <Link
@@ -207,7 +230,9 @@ export default function MarketplacePage() {
             </div>
             <h3 className="text-xl font-semibold">No listings yet</h3>
             <p className="text-muted-foreground">
-              {activeTab === 'all'
+              {cigarId
+                ? `No listings found for this cigar.`
+                : activeTab === 'all'
                 ? 'Be the first to create a listing! Start buying, selling, or trading cigars with the community.'
                 : `No ${getTypeLabel(activeTab).toLowerCase()} listings at the moment.`}
             </p>

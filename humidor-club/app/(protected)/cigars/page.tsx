@@ -13,6 +13,7 @@ import {
   Rows,
   List,
   Wine,
+  ShoppingBag,
 } from 'lucide-react';
 import { useEffect, useState, type ReactNode } from 'react';
 import Image from 'next/image';
@@ -31,6 +32,7 @@ interface Cigar {
   image_urls?: string | null; // JSON string from DB
   isInMyHumidor?: boolean; // Added flag
   pairingCount?: number; // Number of pairings for this cigar
+  listingCount?: number; // Number of active listings for this cigar
   line?: {
     id: string;
     name: string;
@@ -249,6 +251,9 @@ export default function CigarsPage() {
                         {cigar.pairingCount && cigar.pairingCount > 0 && (
                           <PairingBadge count={cigar.pairingCount} />
                         )}
+                        {cigar.listingCount && cigar.listingCount > 0 && (
+                          <MarketplaceBadge count={cigar.listingCount} cigarId={cigar.id} />
+                        )}
                       </div>
 
                       <div className="space-y-2 text-sm text-muted-foreground">
@@ -345,6 +350,9 @@ export default function CigarsPage() {
                         {cigar.pairingCount && cigar.pairingCount > 0 && (
                           <PairingBadge count={cigar.pairingCount} />
                         )}
+                        {cigar.listingCount && cigar.listingCount > 0 && (
+                          <MarketplaceBadge count={cigar.listingCount} cigarId={cigar.id} />
+                        )}
                       </div>
 
                       <div className="grid gap-2 text-sm sm:grid-cols-2 lg:grid-cols-3 text-muted-foreground">
@@ -427,6 +435,9 @@ export default function CigarsPage() {
                         )}
                         {cigar.pairingCount && cigar.pairingCount > 0 && (
                           <PairingBadge count={cigar.pairingCount} compact />
+                        )}
+                        {cigar.listingCount && cigar.listingCount > 0 && (
+                          <MarketplaceBadge count={cigar.listingCount} cigarId={cigar.id} compact />
                         )}
                         <CigarActions
                           cigar={cigar}
@@ -530,5 +541,31 @@ function PairingBadge({ count, compact }: { count: number; compact?: boolean }) 
       <Wine className="h-3 w-3" />
       <span>{count} pairing{count !== 1 ? 's' : ''}</span>
     </div>
+  );
+}
+
+function MarketplaceBadge({ count, cigarId, compact }: { count: number; cigarId: string; compact?: boolean }) {
+  if (compact) {
+    return (
+      <Link
+        href={`/marketplace?cigar_id=${cigarId}`}
+        className="inline-flex items-center gap-1 rounded-full bg-orange-500/10 px-2 py-1 text-xs text-orange-600 dark:text-orange-400 hover:bg-orange-500/20 transition-colors"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <ShoppingBag className="h-3 w-3" />
+        <span>{count}</span>
+      </Link>
+    );
+  }
+  
+  return (
+    <Link
+      href={`/marketplace?cigar_id=${cigarId}`}
+      className="inline-flex items-center gap-1 rounded-full bg-orange-500/10 px-2 py-1 text-xs text-orange-600 dark:text-orange-400 hover:bg-orange-500/20 transition-colors"
+      onClick={(e) => e.stopPropagation()}
+    >
+      <ShoppingBag className="h-3 w-3" />
+      <span>{count} listing{count !== 1 ? 's' : ''}</span>
+    </Link>
   );
 }

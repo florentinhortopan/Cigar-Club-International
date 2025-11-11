@@ -82,12 +82,15 @@ export default function CreateListingPage() {
       setQty(Math.min(1, availableQuantity));
       
       // Prefer sale if available, otherwise trade, otherwise default to WTS
-      if (selectedHumidorItem.available_for_sale > 0) {
+      const availableForSale = selectedHumidorItem.available_for_sale || 0;
+      const availableForTrade = selectedHumidorItem.available_for_trade || 0;
+      
+      if (availableForSale > 0) {
         setType('WTS');
-        setQty(Math.min(selectedHumidorItem.available_for_sale, availableQuantity));
-      } else if (selectedHumidorItem.available_for_trade > 0) {
+        setQty(Math.min(availableForSale, availableQuantity));
+      } else if (availableForTrade > 0) {
         setType('WTT');
-        setQty(Math.min(selectedHumidorItem.available_for_trade, availableQuantity));
+        setQty(Math.min(availableForTrade, availableQuantity));
       } else {
         // Default to WTS if no marketplace quantities set
         setType('WTS');
@@ -222,6 +225,8 @@ export default function CreateListingPage() {
       // Validate quantity
       if (selectedHumidorItem) {
         const availableQty = selectedHumidorItem.quantity - (selectedHumidorItem.smoked_count || 0);
+        const availableForSale = selectedHumidorItem.available_for_sale || 0;
+        const availableForTrade = selectedHumidorItem.available_for_trade || 0;
         
         // Check if quantity exceeds available quantity
         if (qty > availableQty) {
@@ -231,15 +236,15 @@ export default function CreateListingPage() {
         }
         
         // If marketplace quantities are set, validate against them
-        if (type === 'WTS' && selectedHumidorItem.available_for_sale > 0) {
-          if (qty > selectedHumidorItem.available_for_sale) {
-            alert(`Quantity cannot exceed available for sale (${selectedHumidorItem.available_for_sale}). Please update your marketplace availability first.`);
+        if (type === 'WTS' && availableForSale > 0) {
+          if (qty > availableForSale) {
+            alert(`Quantity cannot exceed available for sale (${availableForSale}). Please update your marketplace availability first.`);
             setLoading(false);
             return;
           }
-        } else if (type === 'WTT' && selectedHumidorItem.available_for_trade > 0) {
-          if (qty > selectedHumidorItem.available_for_trade) {
-            alert(`Quantity cannot exceed available for trade (${selectedHumidorItem.available_for_trade}). Please update your marketplace availability first.`);
+        } else if (type === 'WTT' && availableForTrade > 0) {
+          if (qty > availableForTrade) {
+            alert(`Quantity cannot exceed available for trade (${availableForTrade}). Please update your marketplace availability first.`);
             setLoading(false);
             return;
           }
@@ -319,12 +324,12 @@ export default function CreateListingPage() {
                           </p>
                           <div className="flex items-center gap-4 mt-1 text-xs text-muted-foreground">
                             <span>Available: {selectedHumidorItem.quantity - (selectedHumidorItem.smoked_count || 0)}</span>
-                            {selectedHumidorItem.available_for_sale > 0 && (
+                            {(selectedHumidorItem.available_for_sale || 0) > 0 && (
                               <span className="text-green-600 dark:text-green-400">
                                 {selectedHumidorItem.available_for_sale} marked for sale
                               </span>
                             )}
-                            {selectedHumidorItem.available_for_trade > 0 && (
+                            {(selectedHumidorItem.available_for_trade || 0) > 0 && (
                               <span className="text-blue-600 dark:text-blue-400">
                                 {selectedHumidorItem.available_for_trade} marked for trade
                               </span>
@@ -372,12 +377,12 @@ export default function CreateListingPage() {
                               </p>
                               <div className="flex items-center gap-4 mt-1 text-xs text-muted-foreground">
                                 <span>Available: {item.quantity - (item.smoked_count || 0)}</span>
-                                {item.available_for_sale > 0 && (
+                                {(item.available_for_sale || 0) > 0 && (
                                   <span className="text-green-600 dark:text-green-400">
                                     {item.available_for_sale} for sale
                                   </span>
                                 )}
-                                {item.available_for_trade > 0 && (
+                                {(item.available_for_trade || 0) > 0 && (
                                   <span className="text-blue-600 dark:text-blue-400">
                                     {item.available_for_trade} for trade
                                   </span>
@@ -535,11 +540,14 @@ export default function CreateListingPage() {
                           // Calculate available quantity (total - smoked)
                           const availableQty = selectedHumidorItem.quantity - (selectedHumidorItem.smoked_count || 0);
                           // If marketplace quantities are set, respect them; otherwise use available quantity
+                          const availableForSale = selectedHumidorItem.available_for_sale || 0;
+                          const availableForTrade = selectedHumidorItem.available_for_trade || 0;
+                          
                           let maxQty = availableQty;
-                          if (type === 'WTS' && selectedHumidorItem.available_for_sale > 0) {
-                            maxQty = Math.min(selectedHumidorItem.available_for_sale, availableQty);
-                          } else if (type === 'WTT' && selectedHumidorItem.available_for_trade > 0) {
-                            maxQty = Math.min(selectedHumidorItem.available_for_trade, availableQty);
+                          if (type === 'WTS' && availableForSale > 0) {
+                            maxQty = Math.min(availableForSale, availableQty);
+                          } else if (type === 'WTT' && availableForTrade > 0) {
+                            maxQty = Math.min(availableForTrade, availableQty);
                           }
                           setQty(Math.min(Math.max(1, val), maxQty));
                         } else {
@@ -550,10 +558,13 @@ export default function CreateListingPage() {
                       max={selectedHumidorItem 
                         ? (() => {
                             const availableQty = selectedHumidorItem.quantity - (selectedHumidorItem.smoked_count || 0);
-                            if (type === 'WTS' && selectedHumidorItem.available_for_sale > 0) {
-                              return Math.min(selectedHumidorItem.available_for_sale, availableQty);
-                            } else if (type === 'WTT' && selectedHumidorItem.available_for_trade > 0) {
-                              return Math.min(selectedHumidorItem.available_for_trade, availableQty);
+                            const availableForSale = selectedHumidorItem.available_for_sale || 0;
+                            const availableForTrade = selectedHumidorItem.available_for_trade || 0;
+                            
+                            if (type === 'WTS' && availableForSale > 0) {
+                              return Math.min(availableForSale, availableQty);
+                            } else if (type === 'WTT' && availableForTrade > 0) {
+                              return Math.min(availableForTrade, availableQty);
                             }
                             return availableQty;
                           })()
@@ -565,10 +576,13 @@ export default function CreateListingPage() {
                       <p className="text-xs text-muted-foreground">
                         {(() => {
                           const availableQty = selectedHumidorItem.quantity - (selectedHumidorItem.smoked_count || 0);
-                          if (type === 'WTS' && selectedHumidorItem.available_for_sale > 0) {
-                            return `Max: ${Math.min(selectedHumidorItem.available_for_sale, availableQty)} (based on marketplace availability)`;
-                          } else if (type === 'WTT' && selectedHumidorItem.available_for_trade > 0) {
-                            return `Max: ${Math.min(selectedHumidorItem.available_for_trade, availableQty)} (based on marketplace availability)`;
+                          const availableForSale = selectedHumidorItem.available_for_sale || 0;
+                          const availableForTrade = selectedHumidorItem.available_for_trade || 0;
+                          
+                          if (type === 'WTS' && availableForSale > 0) {
+                            return `Max: ${Math.min(availableForSale, availableQty)} (based on marketplace availability)`;
+                          } else if (type === 'WTT' && availableForTrade > 0) {
+                            return `Max: ${Math.min(availableForTrade, availableQty)} (based on marketplace availability)`;
                           }
                           return `Max: ${availableQty} (available in your humidor)`;
                         })()}

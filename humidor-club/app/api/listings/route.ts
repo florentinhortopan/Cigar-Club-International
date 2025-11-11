@@ -12,6 +12,7 @@ export async function GET(request: NextRequest) {
     const minPrice = searchParams.get('minPrice') ? parseInt(searchParams.get('minPrice')!) : null;
     const maxPrice = searchParams.get('maxPrice') ? parseInt(searchParams.get('maxPrice')!) : null;
     const userId = searchParams.get('userId');
+    const cigarId = searchParams.get('cigar_id');
     const limit = parseInt(searchParams.get('limit') || '24');
     const offset = parseInt(searchParams.get('offset') || '0');
 
@@ -45,6 +46,10 @@ export async function GET(request: NextRequest) {
     
     if (userId) {
       where.user_id = userId;
+    }
+    
+    if (cigarId) {
+      where.cigar_id = cigarId;
     }
 
     // Fetch listings with related data
