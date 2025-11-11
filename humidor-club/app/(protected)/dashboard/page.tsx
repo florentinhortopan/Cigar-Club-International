@@ -1,6 +1,6 @@
 'use client';
 
-import { Cigarette, Package, TrendingUp, Users, Wine, UserPlus, Plus } from 'lucide-react';
+import { Cigarette, Package, TrendingUp, Users, Wine, UserPlus, Plus, ShoppingBag } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useEffect, useState } from 'react';
@@ -24,7 +24,7 @@ interface Branch {
 }
 
 interface Activity {
-  type: 'pairing' | 'user_joined' | 'cigar_added' | 'humidor_added';
+  type: 'pairing' | 'user_joined' | 'cigar_added' | 'humidor_added' | 'listing_created';
   id: string;
   title: string;
   description: string;
@@ -281,6 +281,8 @@ function ActivityItem({ activity, formatTimeAgo }: { activity: Activity; formatT
         return <Cigarette className="h-4 w-4" />;
       case 'humidor_added':
         return <Package className="h-4 w-4" />;
+      case 'listing_created':
+        return <ShoppingBag className="h-4 w-4" />;
       default:
         return <Plus className="h-4 w-4" />;
     }
@@ -296,6 +298,8 @@ function ActivityItem({ activity, formatTimeAgo }: { activity: Activity; formatT
         return 'bg-purple-500/10 text-purple-600 dark:text-purple-400';
       case 'humidor_added':
         return 'bg-orange-500/10 text-orange-600 dark:text-orange-400';
+      case 'listing_created':
+        return 'bg-amber-500/10 text-amber-600 dark:text-amber-400';
       default:
         return 'bg-muted text-muted-foreground';
     }

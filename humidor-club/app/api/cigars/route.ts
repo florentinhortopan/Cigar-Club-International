@@ -73,22 +73,37 @@ export async function GET(request: Request) {
         pairingCountMap.set(p.cigar_id, p._count.id);
       });
 
-      // Get listing counts (only ACTIVE listings)
-      const listingCounts = await prisma.listing.groupBy({
-        by: ['cigar_id'],
-        where: {
-          cigar_id: { in: cigarIds },
-          status: 'ACTIVE',
-        },
-        _count: {
-          id: true,
-        },
-      });
-      
-      // Create a map of cigar_id to listing count
-      listingCounts.forEach(l => {
-        listingCountMap.set(l.cigar_id, l._count.id);
-      });
+      // Get listing counts (only ACTIVE listings with a cigar_id)
+      if (cigarIds.length > 0) {
+        try {
+          // Get all active listings with cigar_id in our list
+          // Note: Prisma's `in` operator automatically excludes null values
+          const activeListings = await prisma.listing.findMany({
+            where: {
+              cigar_id: { in: cigarIds },
+              status: 'ACTIVE',
+            },
+            select: {
+              cigar_id: true,
+            },
+          });
+          
+          // Debug: Log counts for troubleshooting
+          if (activeListings.length > 0) {
+            console.log(`[Cigars API] Found ${activeListings.length} active listings for ${cigarIds.length} cigars`);
+          }
+          
+          // Count listings per cigar_id (filter out any nulls just in case)
+          activeListings.forEach(listing => {
+            if (listing.cigar_id) {
+              listingCountMap.set(listing.cigar_id, (listingCountMap.get(listing.cigar_id) || 0) + 1);
+            }
+          });
+        } catch (error) {
+          console.error('Error fetching listing counts:', error);
+          // Continue without listing counts if there's an error
+        }
+      }
     }
     
     // Add isInMyHumidor flag, pairing count, and listing count to each cigar

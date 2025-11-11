@@ -64,11 +64,14 @@ export default function CreateListingPage() {
   const [meetUpOnly, setMeetUpOnly] = useState(true);
   const [willShip, setWillShip] = useState(false);
   const [imageUrls, setImageUrls] = useState<string[]>([]);
+  // Default to ACTIVE when creating from humidor (more common use case), DRAFT otherwise
   const [status, setStatus] = useState<'DRAFT' | 'ACTIVE'>('DRAFT');
 
   useEffect(() => {
     if (humidorItemId) {
       fetchHumidorItem();
+      // Default to ACTIVE when creating from humidor item
+      setStatus('ACTIVE');
     } else {
       // Only fetch all humidor items if no specific item is requested
       fetchHumidorItems();

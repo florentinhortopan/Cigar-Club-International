@@ -26,7 +26,7 @@ export async function GET() {
 
     // Fetch activities from multiple sources
     const activities: Array<{
-      type: 'pairing' | 'user_joined' | 'cigar_added' | 'humidor_added';
+      type: 'pairing' | 'user_joined' | 'cigar_added' | 'humidor_added' | 'listing_created';
       id: string;
       title: string;
       description: string;
@@ -204,6 +204,65 @@ export async function GET() {
         description: `You added ${item.quantity} × ${cigarName} to your humidor`,
         link: `/humidor`,
         createdAt: item.created_at,
+      });
+    }
+
+    // 5. Recent listings created (all listings, with link to listing or cigar)
+    const recentListings = await prisma.listing.findMany({
+      where: {
+        status: 'ACTIVE', // Only show active listings
+        published_at: { not: null }, // Only published listings
+      },
+      take: 10, // Limit to recent ones
+      orderBy: { published_at: 'desc' },
+      include: {
+        user: {
+          select: {
+            id: true,
+            name: true,
+            image: true,
+          },
+        },
+        cigar: {
+          select: {
+            id: true,
+            vitola: true,
+            line: {
+              select: {
+                name: true,
+                brand: {
+                  select: {
+                    name: true,
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+    });
+
+    for (const listing of recentListings) {
+      const typeLabel = listing.type === 'WTS' ? 'For Sale' : listing.type === 'WTB' ? 'Wanted' : 'Trade';
+      let description = `${listing.user.name || 'Someone'} created a ${typeLabel.toLowerCase()} listing: ${listing.title}`;
+      let link = `/marketplace/${listing.id}`;
+      
+      // If listing has a cigar, include cigar name and link to cigar page as well
+      if (listing.cigar) {
+        const brandName = listing.cigar.line.brand?.name || 'Unknown Brand';
+        const lineName = listing.cigar.line.name || 'Unknown Line';
+        const cigarName = `${brandName} ${lineName} - ${listing.cigar.vitola}`;
+        description = `${listing.user.name || 'Someone'} listed ${listing.qty} × ${cigarName} ${typeLabel.toLowerCase()}`;
+      }
+      
+      activities.push({
+        type: 'listing_created',
+        id: listing.id,
+        title: `New listing: ${typeLabel}`,
+        description,
+        link,
+        user: listing.user,
+        createdAt: listing.published_at || listing.created_at,
       });
     }
 
