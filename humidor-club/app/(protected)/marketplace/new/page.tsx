@@ -10,8 +10,9 @@ interface HumidorItem {
   id: string;
   cigar_id: string;
   quantity: number;
-  available_for_sale: number;
-  available_for_trade: number;
+  smoked_count?: number;
+  available_for_sale?: number;
+  available_for_trade?: number;
   cigar?: {
     id: string;
     vitola: string;
@@ -67,6 +68,9 @@ export default function CreateListingPage() {
 
   useEffect(() => {
     if (humidorItemId) {
+      fetchHumidorItem();
+    } else {
+      // Only fetch all humidor items if no specific item is requested
       fetchHumidorItems();
     }
   }, [humidorItemId]);
@@ -74,20 +78,58 @@ export default function CreateListingPage() {
   useEffect(() => {
     if (selectedHumidorItem) {
       // Pre-fill form with humidor item data
-      setQty(1);
+      const availableQuantity = selectedHumidorItem.quantity - (selectedHumidorItem.smoked_count || 0);
+      setQty(Math.min(1, availableQuantity));
+      
+      // Prefer sale if available, otherwise trade, otherwise default to WTS
       if (selectedHumidorItem.available_for_sale > 0) {
         setType('WTS');
-        setQty(Math.min(selectedHumidorItem.available_for_sale, selectedHumidorItem.quantity));
+        setQty(Math.min(selectedHumidorItem.available_for_sale, availableQuantity));
       } else if (selectedHumidorItem.available_for_trade > 0) {
         setType('WTT');
-        setQty(Math.min(selectedHumidorItem.available_for_trade, selectedHumidorItem.quantity));
+        setQty(Math.min(selectedHumidorItem.available_for_trade, availableQuantity));
+      } else {
+        // Default to WTS if no marketplace quantities set
+        setType('WTS');
+        setQty(Math.min(1, availableQuantity));
       }
+      
       if (selectedHumidorItem.cigar) {
         setSelectedCigar(selectedHumidorItem.cigar);
-        setTitle(`${selectedHumidorItem.cigar.line?.brand?.name || ''} ${selectedHumidorItem.cigar.line?.name || ''} - ${selectedHumidorItem.cigar.vitola}`.trim());
+        const brandName = selectedHumidorItem.cigar.line?.brand?.name || '';
+        const lineName = selectedHumidorItem.cigar.line?.name || '';
+        const vitola = selectedHumidorItem.cigar.vitola || '';
+        setTitle(`${brandName} ${lineName} - ${vitola}`.trim().replace(/\s+/g, ' '));
+      }
+      
+      // Skip to step 2 if item is selected (automatically when coming from humidor)
+      if (humidorItemId || selectedHumidorItem) {
+        setStep(2);
       }
     }
-  }, [selectedHumidorItem]);
+  }, [selectedHumidorItem, humidorItemId]);
+
+  const fetchHumidorItem = async () => {
+    try {
+      setLoadingHumidor(true);
+      const response = await fetch('/api/humidor');
+      const data = await response.json();
+
+      if (data.success) {
+        // Find the specific humidor item (don't filter by marketplace quantities)
+        const item = data.items.find((i: HumidorItem) => i.id === humidorItemId);
+        if (item && item.quantity > 0) {
+          setSelectedHumidorItem(item);
+        } else {
+          console.error('Humidor item not found or has no quantity');
+        }
+      }
+    } catch (error) {
+      console.error('Error fetching humidor item:', error);
+    } finally {
+      setLoadingHumidor(false);
+    }
+  };
 
   const fetchHumidorItems = async () => {
     try {
@@ -96,19 +138,11 @@ export default function CreateListingPage() {
       const data = await response.json();
 
       if (data.success) {
+        // Filter items with quantity > 0 (don't require marketplace quantities)
         const items = data.items.filter((item: HumidorItem) => 
-          item.quantity > 0 && (item.available_for_sale > 0 || item.available_for_trade > 0)
+          item.quantity > 0
         );
         setHumidorItems(items);
-
-        // If humidor_item_id is provided, select that item
-        if (humidorItemId) {
-          const item = items.find((i: HumidorItem) => i.id === humidorItemId);
-          if (item) {
-            setSelectedHumidorItem(item);
-            setStep(2); // Skip to step 2 if item is pre-selected
-          }
-        }
       }
     } catch (error) {
       console.error('Error fetching humidor items:', error);
@@ -187,14 +221,28 @@ export default function CreateListingPage() {
 
       // Validate quantity
       if (selectedHumidorItem) {
-        const maxQty = type === 'WTS' 
-          ? selectedHumidorItem.available_for_sale 
-          : selectedHumidorItem.available_for_trade;
+        const availableQty = selectedHumidorItem.quantity - (selectedHumidorItem.smoked_count || 0);
         
-        if (qty > maxQty) {
-          alert(`Quantity cannot exceed available quantity (${maxQty})`);
+        // Check if quantity exceeds available quantity
+        if (qty > availableQty) {
+          alert(`Quantity cannot exceed available quantity (${availableQty})`);
           setLoading(false);
           return;
+        }
+        
+        // If marketplace quantities are set, validate against them
+        if (type === 'WTS' && selectedHumidorItem.available_for_sale > 0) {
+          if (qty > selectedHumidorItem.available_for_sale) {
+            alert(`Quantity cannot exceed available for sale (${selectedHumidorItem.available_for_sale}). Please update your marketplace availability first.`);
+            setLoading(false);
+            return;
+          }
+        } else if (type === 'WTT' && selectedHumidorItem.available_for_trade > 0) {
+          if (qty > selectedHumidorItem.available_for_trade) {
+            alert(`Quantity cannot exceed available for trade (${selectedHumidorItem.available_for_trade}). Please update your marketplace availability first.`);
+            setLoading(false);
+            return;
+          }
         }
       }
 
@@ -254,13 +302,49 @@ export default function CreateListingPage() {
               <h2 className="text-lg font-semibold mb-4">Select Cigar</h2>
               
               {/* Option: From Humidor */}
-              {humidorItemId && (
+              {humidorItemId ? (
+                <div className="mb-6">
+                  <h3 className="text-sm font-medium mb-3">Listing from Humidor</h3>
+                  {loadingHumidor ? (
+                    <p className="text-sm text-muted-foreground">Loading humidor item...</p>
+                  ) : selectedHumidorItem ? (
+                    <div className="p-4 border rounded-lg bg-primary/5 border-primary">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="font-medium">
+                            {selectedHumidorItem.cigar?.line?.brand?.name || 'Unknown'} {selectedHumidorItem.cigar?.line?.name || ''}
+                          </p>
+                          <p className="text-sm text-muted-foreground">
+                            {selectedHumidorItem.cigar?.vitola || 'Unknown Vitola'}
+                          </p>
+                          <div className="flex items-center gap-4 mt-1 text-xs text-muted-foreground">
+                            <span>Available: {selectedHumidorItem.quantity - (selectedHumidorItem.smoked_count || 0)}</span>
+                            {selectedHumidorItem.available_for_sale > 0 && (
+                              <span className="text-green-600 dark:text-green-400">
+                                {selectedHumidorItem.available_for_sale} marked for sale
+                              </span>
+                            )}
+                            {selectedHumidorItem.available_for_trade > 0 && (
+                              <span className="text-blue-600 dark:text-blue-400">
+                                {selectedHumidorItem.available_for_trade} marked for trade
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                        <Package className="h-5 w-5 text-primary" />
+                      </div>
+                    </div>
+                  ) : (
+                    <p className="text-sm text-muted-foreground">Humidor item not found.</p>
+                  )}
+                </div>
+              ) : (
                 <div className="mb-6">
                   <h3 className="text-sm font-medium mb-3">From My Humidor</h3>
                   {loadingHumidor ? (
                     <p className="text-sm text-muted-foreground">Loading humidor items...</p>
                   ) : humidorItems.length === 0 ? (
-                    <p className="text-sm text-muted-foreground">No items available for listing in your humidor.</p>
+                    <p className="text-sm text-muted-foreground">No items in your humidor. Add cigars to your humidor first.</p>
                   ) : (
                     <div className="space-y-2">
                       {humidorItems.map((item) => (
@@ -287,7 +371,7 @@ export default function CreateListingPage() {
                                 {item.cigar?.vitola || 'Unknown Vitola'}
                               </p>
                               <div className="flex items-center gap-4 mt-1 text-xs text-muted-foreground">
-                                <span>Qty: {item.quantity}</span>
+                                <span>Available: {item.quantity - (item.smoked_count || 0)}</span>
                                 {item.available_for_sale > 0 && (
                                   <span className="text-green-600 dark:text-green-400">
                                     {item.available_for_sale} for sale
@@ -372,6 +456,12 @@ export default function CreateListingPage() {
         {/* Step 2: Listing Details */}
         {step === 2 && (
           <div className="space-y-6">
+            {humidorItemId && loadingHumidor && !selectedHumidorItem ? (
+              <div className="text-center py-12">
+                <p className="text-muted-foreground">Loading humidor item...</p>
+              </div>
+            ) : (
+              <>
             <div>
               <h2 className="text-lg font-semibold mb-4">Listing Details</h2>
 
@@ -442,9 +532,15 @@ export default function CreateListingPage() {
                       onChange={(e) => {
                         const val = parseInt(e.target.value) || 1;
                         if (selectedHumidorItem) {
-                          const maxQty = type === 'WTS'
-                            ? selectedHumidorItem.available_for_sale || 0
-                            : selectedHumidorItem.available_for_trade || 0;
+                          // Calculate available quantity (total - smoked)
+                          const availableQty = selectedHumidorItem.quantity - (selectedHumidorItem.smoked_count || 0);
+                          // If marketplace quantities are set, respect them; otherwise use available quantity
+                          let maxQty = availableQty;
+                          if (type === 'WTS' && selectedHumidorItem.available_for_sale > 0) {
+                            maxQty = Math.min(selectedHumidorItem.available_for_sale, availableQty);
+                          } else if (type === 'WTT' && selectedHumidorItem.available_for_trade > 0) {
+                            maxQty = Math.min(selectedHumidorItem.available_for_trade, availableQty);
+                          }
                           setQty(Math.min(Math.max(1, val), maxQty));
                         } else {
                           setQty(Math.max(1, val));
@@ -452,14 +548,30 @@ export default function CreateListingPage() {
                       }}
                       min="1"
                       max={selectedHumidorItem 
-                        ? (type === 'WTS' ? selectedHumidorItem.available_for_sale : selectedHumidorItem.available_for_trade)
+                        ? (() => {
+                            const availableQty = selectedHumidorItem.quantity - (selectedHumidorItem.smoked_count || 0);
+                            if (type === 'WTS' && selectedHumidorItem.available_for_sale > 0) {
+                              return Math.min(selectedHumidorItem.available_for_sale, availableQty);
+                            } else if (type === 'WTT' && selectedHumidorItem.available_for_trade > 0) {
+                              return Math.min(selectedHumidorItem.available_for_trade, availableQty);
+                            }
+                            return availableQty;
+                          })()
                         : undefined}
                       required
                       className="w-full p-3 rounded-lg border bg-background focus:outline-none focus:ring-2 focus:ring-primary"
                     />
                     {selectedHumidorItem && (
                       <p className="text-xs text-muted-foreground">
-                        Max: {type === 'WTS' ? selectedHumidorItem.available_for_sale : selectedHumidorItem.available_for_trade}
+                        {(() => {
+                          const availableQty = selectedHumidorItem.quantity - (selectedHumidorItem.smoked_count || 0);
+                          if (type === 'WTS' && selectedHumidorItem.available_for_sale > 0) {
+                            return `Max: ${Math.min(selectedHumidorItem.available_for_sale, availableQty)} (based on marketplace availability)`;
+                          } else if (type === 'WTT' && selectedHumidorItem.available_for_trade > 0) {
+                            return `Max: ${Math.min(selectedHumidorItem.available_for_trade, availableQty)} (based on marketplace availability)`;
+                          }
+                          return `Max: ${availableQty} (available in your humidor)`;
+                        })()}
                       </p>
                     )}
                   </div>
@@ -583,13 +695,22 @@ export default function CreateListingPage() {
             </div>
 
             <div className="flex gap-3">
-              <button
-                type="button"
-                onClick={() => setStep(1)}
-                className="flex-1 border font-semibold py-3 px-4 rounded-lg hover:bg-muted transition-colors"
-              >
-                Back
-              </button>
+              {humidorItemId ? (
+                <Link
+                  href="/humidor"
+                  className="flex-1 border font-semibold py-3 px-4 rounded-lg hover:bg-muted transition-colors text-center"
+                >
+                  Back to Humidor
+                </Link>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => setStep(1)}
+                  className="flex-1 border font-semibold py-3 px-4 rounded-lg hover:bg-muted transition-colors"
+                >
+                  Back
+                </button>
+              )}
               <button
                 type="submit"
                 disabled={!canSubmit || loading}
@@ -598,6 +719,8 @@ export default function CreateListingPage() {
                 {loading ? 'Creating...' : status === 'ACTIVE' ? 'Publish Listing' : 'Save Draft'}
               </button>
             </div>
+            </>
+            )}
           </div>
         )}
       </form>

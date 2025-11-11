@@ -294,7 +294,8 @@ export default function HumidorPage() {
                 const isExpanded = expandedItems.has(item.id);
                 const quantities = marketplaceQuantities[item.id] || { sale: item.available_for_sale || 0, trade: item.available_for_trade || 0 };
                 const hasMarketplaceActivity = (item.available_for_sale || 0) > 0 || (item.available_for_trade || 0) > 0;
-                const canCreateListing = quantities.sale > 0 || quantities.trade > 0;
+                // Allow listing if there's available quantity (don't require marketplace quantities to be set)
+                const canCreateListing = availableQuantity > 0;
 
                 return (
               <div key={item.id} className="bg-card border rounded-lg p-4 space-y-3">

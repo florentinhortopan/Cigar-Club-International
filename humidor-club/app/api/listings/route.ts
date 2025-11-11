@@ -192,16 +192,32 @@ export async function POST(request: NextRequest) {
         );
       }
 
-      // Validate quantity
-      const availableQuantity = type === 'WTS' 
-        ? humidorItem.available_for_sale 
-        : humidorItem.available_for_trade;
+      // Calculate available quantity (total - smoked)
+      const availableQuantity = humidorItem.quantity - humidorItem.smoked_count;
 
+      // Validate quantity doesn't exceed available quantity
       if (qty > availableQuantity) {
         return NextResponse.json(
           { success: false, error: `Quantity exceeds available quantity (${availableQuantity})` },
           { status: 400 }
         );
+      }
+
+      // If marketplace quantities are set, validate against them (optional check)
+      if (type === 'WTS' && humidorItem.available_for_sale > 0) {
+        if (qty > humidorItem.available_for_sale) {
+          return NextResponse.json(
+            { success: false, error: `Quantity exceeds available for sale (${humidorItem.available_for_sale}). Please update your marketplace availability first.` },
+            { status: 400 }
+          );
+        }
+      } else if (type === 'WTT' && humidorItem.available_for_trade > 0) {
+        if (qty > humidorItem.available_for_trade) {
+          return NextResponse.json(
+            { success: false, error: `Quantity exceeds available for trade (${humidorItem.available_for_trade}). Please update your marketplace availability first.` },
+            { status: 400 }
+          );
+        }
       }
 
       // Use cigar_id from humidor item if not provided
