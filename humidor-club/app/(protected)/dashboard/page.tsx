@@ -1,6 +1,6 @@
 'use client';
 
-import { Cigarette, Package, TrendingUp, Users, Wine, UserPlus, Plus, ShoppingBag } from 'lucide-react';
+import { Cigarette, Package, TrendingUp, Users, Wine, UserPlus, Plus, ShoppingBag, MessageSquare } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useEffect, useState } from 'react';
@@ -243,10 +243,13 @@ export default function DashboardPage() {
             <span className="font-medium">Marketplace</span>
           </Link>
           
-          <button className="flex flex-col items-center justify-center p-6 rounded-lg border hover:bg-muted/50 transition-colors min-h-[120px]">
-            <Users className="h-8 w-8 text-primary mb-2" />
+          <Link 
+            href="/community"
+            className="flex flex-col items-center justify-center p-6 rounded-lg border hover:bg-muted/50 transition-colors min-h-[120px]"
+          >
+            <MessageSquare className="h-8 w-8 text-primary mb-2" />
             <span className="font-medium">Community</span>
-          </button>
+          </Link>
         </div>
       </div>
 
