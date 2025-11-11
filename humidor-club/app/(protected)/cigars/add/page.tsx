@@ -488,9 +488,48 @@ export default function AddCigarPage() {
   const canSubmit = canProceedStep1 && canProceedStep2;
 
   return (
-    <div className="min-h-screen bg-background pb-24">
-      {/* Header */}
-      <div className="sticky top-0 z-10 bg-card border-b">
+    <>
+      <style dangerouslySetInnerHTML={{__html: `
+        /* Force dropdowns to appear above everything with highest z-index */
+        .dropdown-suggestions {
+          position: absolute !important;
+          z-index: 99999 !important;
+          background-color: hsl(var(--color-popover)) !important;
+          isolation: isolate !important;
+        }
+        
+        @media (prefers-color-scheme: dark) {
+          .dropdown-suggestions {
+            background-color: hsl(222.2, 84%, 4.9%) !important;
+          }
+        }
+        
+        /* Ensure all parent containers allow overflow */
+        form[class*="max-w-2xl"],
+        form[class*="max-w-2xl"] > *,
+        form[class*="max-w-2xl"] > * > * {
+          overflow: visible !important;
+        }
+        
+        /* Ensure main container doesn't clip */
+        div[class*="min-h-screen"][class*="bg-background"] {
+          overflow: visible !important;
+        }
+        
+        /* Ensure step containers don't clip */
+        div[class*="space-y-6"] {
+          overflow: visible !important;
+        }
+        
+        /* Ensure relative containers are positioned correctly */
+        div.relative {
+          position: relative !important;
+          z-index: auto !important;
+        }
+      `}} />
+      <div className="min-h-screen bg-background pb-24">
+        {/* Header */}
+        <div className="sticky top-0 z-10 bg-card border-b">
         <div className="flex items-center gap-4 p-4">
           <Link href="/cigars" className="p-2 -m-2 hover:bg-muted rounded-lg">
             <ArrowLeft className="h-5 w-5" />
@@ -511,7 +550,7 @@ export default function AddCigarPage() {
         </div>
       </div>
 
-      <form onSubmit={handleSubmit} className="max-w-2xl mx-auto p-4 space-y-6">
+      <form onSubmit={handleSubmit} className="max-w-2xl mx-auto p-4 space-y-6" style={{ overflow: 'visible' }}>
         {/* Step 1: Brand & Line */}
         {step === 1 && (
           <div className="space-y-6">
@@ -538,7 +577,14 @@ export default function AddCigarPage() {
                     className="w-full p-3 rounded-lg border bg-background focus:outline-none focus:ring-2 focus:ring-primary"
                   />
                   {showBrandSuggestions && (
-                    <div className="absolute z-[100] top-full left-0 right-0 mt-2 max-h-60 w-full overflow-y-auto rounded-lg border border-border !bg-popover shadow-xl">
+                    <div 
+                      className="dropdown-suggestions absolute top-full left-0 right-0 mt-2 max-h-60 w-full overflow-y-auto rounded-lg border border-border shadow-xl"
+                      style={{
+                        zIndex: 99999,
+                        position: 'absolute',
+                        backgroundColor: 'hsl(var(--color-popover))'
+                      }}
+                    >
                       {brandSuggestions.length > 0 ? (
                         <div className="py-1">
                           {brandSuggestions.map((option) => (
@@ -604,7 +650,14 @@ export default function AddCigarPage() {
                     className="w-full p-3 rounded-lg border bg-background focus:outline-none focus:ring-2 focus:ring-primary disabled:opacity-50"
                   />
                   {showLineSuggestions && selectedBrandId && (
-                    <div className="absolute z-[100] top-full left-0 right-0 mt-2 max-h-60 w-full overflow-y-auto rounded-lg border border-border !bg-popover shadow-xl">
+                    <div 
+                      className="dropdown-suggestions absolute top-full left-0 right-0 mt-2 max-h-60 w-full overflow-y-auto rounded-lg border border-border shadow-xl"
+                      style={{
+                        zIndex: 99999,
+                        position: 'absolute',
+                        backgroundColor: 'hsl(var(--color-popover))'
+                      }}
+                    >
                       {lineSuggestions.length > 0 ? (
                         <div className="py-1">
                           {lineSuggestions.map((option) => (
@@ -679,7 +732,14 @@ export default function AddCigarPage() {
                       className="w-full p-3 rounded-lg border bg-background focus:outline-none focus:ring-2 focus:ring-primary"
                     />
                     {showVitolaSuggestions && vitolaSuggestions.length > 0 && (
-                      <div className="absolute z-[100] top-full left-0 right-0 mt-2 max-h-48 w-full overflow-y-auto rounded-lg border border-border !bg-popover shadow-xl">
+                      <div 
+                        className="dropdown-suggestions absolute top-full left-0 right-0 mt-2 max-h-48 w-full overflow-y-auto rounded-lg border border-border shadow-xl"
+                        style={{
+                          zIndex: 9999,
+                          position: 'absolute',
+                          backgroundColor: 'hsl(var(--color-popover))'
+                        }}
+                      >
                         <div className="py-1">
                           {vitolaSuggestions.map((option) => (
                             <button
@@ -752,7 +812,14 @@ export default function AddCigarPage() {
                       className="w-full p-3 rounded-lg border bg-background focus:outline-none focus:ring-2 focus:ring-primary"
                     />
                     {showCountrySuggestions && countrySuggestions.length > 0 && (
-                      <div className="absolute z-[100] top-full left-0 right-0 mt-2 max-h-48 w-full overflow-y-auto rounded-lg border border-border !bg-popover shadow-xl">
+                      <div 
+                        className="dropdown-suggestions absolute top-full left-0 right-0 mt-2 max-h-48 w-full overflow-y-auto rounded-lg border border-border shadow-xl"
+                        style={{
+                          zIndex: 9999,
+                          position: 'absolute',
+                          backgroundColor: 'hsl(var(--color-popover))'
+                        }}
+                      >
                         <div className="py-1">
                           {countrySuggestions.map((option) => (
                             <button
@@ -823,7 +890,14 @@ export default function AddCigarPage() {
                       className="w-full p-3 rounded-lg border bg-background focus:outline-none focus:ring-2 focus:ring-primary"
                     />
                     {showWrapperSuggestions && wrapperSuggestions.length > 0 && (
-                      <div className="absolute z-[100] top-full left-0 right-0 mt-2 max-h-48 w-full overflow-y-auto rounded-lg border border-border !bg-popover shadow-xl">
+                      <div 
+                        className="dropdown-suggestions absolute top-full left-0 right-0 mt-2 max-h-48 w-full overflow-y-auto rounded-lg border border-border shadow-xl"
+                        style={{
+                          zIndex: 9999,
+                          position: 'absolute',
+                          backgroundColor: 'hsl(var(--color-popover))'
+                        }}
+                      >
                         <div className="py-1">
                           {wrapperSuggestions.map((option) => (
                             <button
@@ -864,7 +938,14 @@ export default function AddCigarPage() {
                       className="w-full p-3 rounded-lg border bg-background focus:outline-none focus:ring-2 focus:ring-primary"
                     />
                     {showBinderSuggestions && binderSuggestions.length > 0 && (
-                      <div className="absolute z-[100] top-full left-0 right-0 mt-2 max-h-48 w-full overflow-y-auto rounded-lg border border-border !bg-popover shadow-xl">
+                      <div 
+                        className="dropdown-suggestions absolute top-full left-0 right-0 mt-2 max-h-48 w-full overflow-y-auto rounded-lg border border-border shadow-xl"
+                        style={{
+                          zIndex: 9999,
+                          position: 'absolute',
+                          backgroundColor: 'hsl(var(--color-popover))'
+                        }}
+                      >
                         <div className="py-1">
                           {binderSuggestions.map((option) => (
                             <button
@@ -905,7 +986,14 @@ export default function AddCigarPage() {
                       className="w-full p-3 rounded-lg border bg-background focus:outline-none focus:ring-2 focus:ring-primary"
                     />
                     {showFillerSuggestions && fillerSuggestions.length > 0 && (
-                      <div className="absolute z-[100] top-full left-0 right-0 mt-2 max-h-48 w-full overflow-y-auto rounded-lg border border-border !bg-popover shadow-xl">
+                      <div 
+                        className="dropdown-suggestions absolute top-full left-0 right-0 mt-2 max-h-48 w-full overflow-y-auto rounded-lg border border-border shadow-xl"
+                        style={{
+                          zIndex: 9999,
+                          position: 'absolute',
+                          backgroundColor: 'hsl(var(--color-popover))'
+                        }}
+                      >
                         <div className="py-1">
                           {fillerSuggestions.map((option) => (
                             <button
@@ -1093,6 +1181,7 @@ export default function AddCigarPage() {
         )}
       </form>
     </div>
+    </>
   );
 }
 
