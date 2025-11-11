@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { Package, Plus, Flame, Calendar, TrendingUp, Tag, DollarSign, RefreshCw } from 'lucide-react';
+import { Package, Plus, Flame, Calendar, TrendingUp, Tag, DollarSign, RefreshCw, Eye, EyeOff } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
 interface HumidorItem {
@@ -47,10 +47,52 @@ export default function HumidorPage() {
   const [updatingItems, setUpdatingItems] = useState<Set<string>>(new Set());
   const [expandedItems, setExpandedItems] = useState<Set<string>>(new Set());
   const [marketplaceQuantities, setMarketplaceQuantities] = useState<Record<string, { sale: number; trade: number }>>({});
+  const [humidorPublic, setHumidorPublic] = useState(false);
+  const [updatingVisibility, setUpdatingVisibility] = useState(false);
 
   useEffect(() => {
     fetchHumidor();
+    fetchProfile();
   }, []);
+
+  const fetchProfile = async () => {
+    try {
+      const response = await fetch('/api/profile');
+      const data = await response.json();
+      
+      if (data.success && data.user) {
+        setHumidorPublic(data.user.humidor_public || false);
+      }
+    } catch (error) {
+      console.error('Error fetching profile:', error);
+    }
+  };
+
+  const handleToggleVisibility = async () => {
+    setUpdatingVisibility(true);
+    try {
+      const response = await fetch('/api/profile', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          humidor_public: !humidorPublic,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        setHumidorPublic(!humidorPublic);
+      } else {
+        alert(data.error || 'Failed to update visibility');
+      }
+    } catch (error) {
+      console.error('Error updating visibility:', error);
+      alert('An error occurred. Please try again.');
+    } finally {
+      setUpdatingVisibility(false);
+    }
+  };
 
   const fetchHumidor = async () => {
     try {
@@ -237,6 +279,42 @@ export default function HumidorPage() {
           <Plus className="h-5 w-5" />
           <span className="hidden sm:inline">Add Cigar</span>
         </Link>
+      </div>
+
+      {/* Visibility Toggle */}
+      <div className="bg-card border rounded-xl p-4">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            {humidorPublic ? (
+              <Eye className="h-5 w-5 text-primary" />
+            ) : (
+              <EyeOff className="h-5 w-5 text-muted-foreground" />
+            )}
+            <div>
+              <h3 className="font-semibold">
+                {humidorPublic ? 'Visible to Community' : 'Private Humidor'}
+              </h3>
+              <p className="text-sm text-muted-foreground">
+                {humidorPublic
+                  ? 'Other members can see your humidor collection'
+                  : 'Your humidor is private and only visible to you'}
+              </p>
+            </div>
+          </div>
+          <button
+            onClick={handleToggleVisibility}
+            disabled={updatingVisibility}
+            className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 ${
+              humidorPublic ? 'bg-primary' : 'bg-muted'
+            } ${updatingVisibility ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
+          >
+            <span
+              className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                humidorPublic ? 'translate-x-6' : 'translate-x-1'
+              }`}
+            />
+          </button>
+        </div>
       </div>
 
       {/* Stats */}

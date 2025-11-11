@@ -30,6 +30,7 @@ export async function GET(
         email: true,
         image: true,
         branch_id: true,
+        humidor_public: true,
         branch: {
           select: {
             id: true,

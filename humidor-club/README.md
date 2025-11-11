@@ -104,6 +104,11 @@ humidor-club/
 - [API Specification](../docs/API_SPECIFICATION.md) - API endpoints and schemas
 - [Component Guidelines](../docs/COMPONENT_GUIDELINES.md) - Component architecture
 - [Testing Guide](../docs/TESTING_GUIDE.md) - Testing strategy and examples
+- [Architecture Guide](../docs/ARCHITECTURE_UPDATED.md) - System architecture
+- [Development Guide](../docs/history/DEVELOPMENT_GUIDE.md) - Development workflow
+- [Deployment Guide](../docs/history/DEPLOYMENT_GUIDE.md) - Deployment instructions
+
+Historical and debug files are archived in [`docs/history/`](../docs/history/).
 
 ## Available Scripts
 

@@ -26,6 +26,7 @@ export async function GET() {
         image: true,
         emailVerified: true,
         branch_id: true,
+        humidor_public: true,
       },
     });
 
@@ -71,13 +72,16 @@ export async function PATCH(request: NextRequest) {
     }
 
     const body = await request.json();
-    const updateData: { name?: string; image?: string } = {};
+    const updateData: { name?: string; image?: string; humidor_public?: boolean } = {};
 
     if (body.name !== undefined) {
       updateData.name = body.name || null;
     }
     if (body.image !== undefined) {
       updateData.image = body.image || null;
+    }
+    if (body.humidor_public !== undefined) {
+      updateData.humidor_public = body.humidor_public;
     }
 
     const updatedUser = await prisma.user.update({
@@ -89,6 +93,7 @@ export async function PATCH(request: NextRequest) {
         email: true,
         image: true,
         emailVerified: true,
+        humidor_public: true,
       },
     });
 

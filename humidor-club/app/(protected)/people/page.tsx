@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { Search, User, Mail, Package, MapPin, Users } from 'lucide-react';
+import { Search, User, Mail, Package, MapPin, Users, EyeOff } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
@@ -11,6 +11,8 @@ interface UserProfile {
   name: string | null;
   email: string | null;
   image: string | null;
+  humidor_public?: boolean;
+  humidorCount?: number | null;
   branch?: {
     id: string;
     name: string;
@@ -68,8 +70,11 @@ export default function PeoplePage() {
   }, [searchQuery]);
 
   useEffect(() => {
-    if (selectedUser) {
+    if (selectedUser && selectedUser.humidor_public) {
       fetchUserHumidor(selectedUser.id);
+    } else if (selectedUser && !selectedUser.humidor_public) {
+      // Clear humidor data if user's humidor is private
+      setUserHumidor(null);
     }
   }, [selectedUser]);
 
@@ -237,9 +242,17 @@ export default function PeoplePage() {
 
                 {/* Info */}
                 <div className="flex-1 min-w-0">
-                  <h3 className="font-semibold text-lg truncate">
-                    {user.name || 'Member'}
-                  </h3>
+                  <div className="flex items-center gap-2">
+                    <h3 className="font-semibold text-lg truncate">
+                      {user.name || 'Member'}
+                    </h3>
+                    {user.humidor_public && user.humidorCount !== null && user.humidorCount !== undefined && user.humidorCount > 0 && (
+                      <span className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-2 py-0.5 text-xs text-primary font-medium">
+                        <Package className="h-3 w-3" />
+                        {user.humidorCount}
+                      </span>
+                    )}
+                  </div>
                   <div className="mt-2 space-y-1">
                     {user.branch && (
                       <div className="flex items-center gap-1 text-sm text-muted-foreground">
@@ -330,7 +343,12 @@ export default function PeoplePage() {
                   <h3 className="text-xl font-semibold">Humidor</h3>
                 </div>
 
-                {loadingHumidor ? (
+                {!selectedUser.humidor_public ? (
+                  <div className="text-center py-8 bg-muted/50 rounded-lg">
+                    <EyeOff className="h-12 w-12 text-muted-foreground mx-auto mb-2" />
+                    <p className="text-muted-foreground">This humidor is private</p>
+                  </div>
+                ) : loadingHumidor ? (
                   <div className="text-center py-8">
                     <p className="text-muted-foreground">Loading humidor...</p>
                   </div>

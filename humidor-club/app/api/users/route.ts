@@ -42,6 +42,7 @@ export async function GET(request: NextRequest) {
         email: true,
         image: true,
         branch_id: true,
+        humidor_public: true,
         branch: {
           select: {
             id: true,
@@ -56,9 +57,42 @@ export async function GET(request: NextRequest) {
       orderBy: { name: 'asc' },
     });
 
+    // Get humidor counts for users with public humidors
+    const userIdsWithPublicHumidors = users
+      .filter(user => user.humidor_public)
+      .map(user => user.id);
+
+    const humidorCounts = new Map<string, number>();
+    
+    if (userIdsWithPublicHumidors.length > 0) {
+      // Get total cigar counts per user (sum of quantities for items with quantity > 0)
+      const humidorStats = await prisma.humidorItem.groupBy({
+        by: ['user_id'],
+        where: {
+          user_id: { in: userIdsWithPublicHumidors },
+          quantity: { gt: 0 },
+        },
+        _sum: {
+          quantity: true,
+        },
+      });
+
+      humidorStats.forEach(stat => {
+        if (stat.user_id && stat._sum.quantity) {
+          humidorCounts.set(stat.user_id, stat._sum.quantity);
+        }
+      });
+    }
+
+    // Add humidor count to each user
+    const usersWithHumidorCounts = users.map(user => ({
+      ...user,
+      humidorCount: user.humidor_public ? (humidorCounts.get(user.id) || 0) : null,
+    }));
+
     return NextResponse.json({
       success: true,
-      users,
+      users: usersWithHumidorCounts,
     });
   } catch (error) {
     console.error('Error in GET /api/users:', error);

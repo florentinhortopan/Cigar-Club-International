@@ -49,6 +49,7 @@ model User {
   image            String?
   branch_id        String? // Branch/location the user belongs to
   branch           Branch?   @relation(fields: [branch_id], references: [id], onDelete: SetNull)
+  humidor_public   Boolean   @default(false) // Whether the user's humidor is visible to the community
   accounts         Account[]
   sessions         Session[]
   created_branches Branch[]  @relation("BranchCreator") // Branches created by this user
@@ -58,6 +59,7 @@ model User {
   humidorItems     HumidorItem[]
 
   @@index([branch_id])
+  @@index([humidor_public])
 }
 
 model VerificationToken {

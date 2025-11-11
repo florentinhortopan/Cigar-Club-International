@@ -22,16 +22,24 @@ export async function GET(
 
     const { id } = await context.params;
 
-    // Verify user exists
+    // Verify user exists and check if humidor is public
     const user = await prisma.user.findUnique({
       where: { id },
-      select: { id: true },
+      select: { id: true, humidor_public: true },
     });
 
     if (!user) {
       return NextResponse.json(
         { success: false, error: 'User not found' },
         { status: 404 }
+      );
+    }
+
+    // Check if humidor is public (unless viewing own humidor)
+    if (id !== session.user.id && !user.humidor_public) {
+      return NextResponse.json(
+        { success: false, error: 'This humidor is private' },
+        { status: 403 }
       );
     }
 
