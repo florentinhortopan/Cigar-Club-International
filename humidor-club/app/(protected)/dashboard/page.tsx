@@ -184,7 +184,7 @@ export default function DashboardPage() {
         </Link>
 
         {/* Stat Card 3 - Marketplace */}
-        <div className="bg-card border rounded-xl p-6 space-y-2">
+        <Link href="/marketplace?myListings=true" className="bg-card border rounded-xl p-6 space-y-2 hover:bg-muted/50 transition-colors cursor-pointer block">
           <div className="flex items-center justify-between">
             <div className="p-2 rounded-lg bg-primary/10">
               <TrendingUp className="h-5 w-5 text-primary" />
@@ -194,8 +194,11 @@ export default function DashboardPage() {
           <div>
             <p className="text-3xl font-bold">{loading ? '...' : stats.activeListings}</p>
             <p className="text-sm text-muted-foreground">Active Listings</p>
+            {!loading && stats.activeListings > 0 && (
+              <p className="text-xs text-primary mt-1 hover:underline">Manage my listings →</p>
+            )}
           </div>
-        </div>
+        </Link>
 
         {/* Stat Card 4 - Reputation */}
         <div className="bg-card border rounded-xl p-6 space-y-2">

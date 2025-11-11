@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useSearchParams } from 'next/navigation';
+import { useSession } from 'next-auth/react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { TrendingUp, Plus, Filter, DollarSign, Package, RefreshCw, MapPin, Eye } from 'lucide-react';
@@ -44,17 +45,23 @@ interface Listing {
 
 export default function MarketplacePage() {
   const searchParams = useSearchParams();
+  const { data: session } = useSession();
   const [listings, setListings] = useState<Listing[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<'all' | 'WTS' | 'WTB' | 'WTT'>('all');
   const [total, setTotal] = useState(0);
   
-  // Get cigar_id from URL params if present
+  // Get cigar_id and myListings from URL params
   const cigarId = searchParams.get('cigar_id');
+  const myListings = searchParams.get('myListings') === 'true';
 
   useEffect(() => {
+    // If myListings is true, wait for session to be available
+    if (myListings && !session) {
+      return; // Don't fetch until session is loaded
+    }
     fetchListings();
-  }, [activeTab, cigarId]);
+  }, [activeTab, cigarId, myListings, session?.user?.id]);
 
   const fetchListings = async () => {
     try {
@@ -69,6 +76,11 @@ export default function MarketplacePage() {
       
       if (cigarId) {
         params.append('cigar_id', cigarId);
+      }
+      
+      // Filter by current user's listings if myListings=true
+      if (myListings && session?.user?.id) {
+        params.append('userId', session.user.id);
       }
       
       const url = `/api/listings?${params.toString()}`;
@@ -149,11 +161,13 @@ export default function MarketplacePage() {
         <div>
           <h1 className="text-3xl font-bold">Marketplace</h1>
           <p className="text-muted-foreground mt-2">
-            {cigarId 
+            {myListings
+              ? 'My Listings'
+              : cigarId 
               ? 'Listings for this cigar'
               : 'Buy, sell, and trade with the community'}
           </p>
-          {cigarId && (
+          {(cigarId || myListings) && (
             <Link
               href="/marketplace"
               className="text-sm text-primary hover:underline mt-1 inline-block"
@@ -230,7 +244,9 @@ export default function MarketplacePage() {
             </div>
             <h3 className="text-xl font-semibold">No listings yet</h3>
             <p className="text-muted-foreground">
-              {cigarId
+              {myListings
+                ? 'You don\'t have any active listings yet. Create your first listing to start selling or trading!'
+                : cigarId
                 ? `No listings found for this cigar.`
                 : activeTab === 'all'
                 ? 'Be the first to create a listing! Start buying, selling, or trading cigars with the community.'

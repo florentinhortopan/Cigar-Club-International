@@ -36,10 +36,17 @@ export async function GET() {
     // Get user's humidor stats
     const humidorStats = await getHumidorStats(userId);
 
+    // Get user's active listings count
+    const activeListingsCount = await prisma.listing.count({
+      where: {
+        user_id: userId,
+        status: 'ACTIVE',
+      },
+    });
+
     // For now, these features are not implemented yet
     // They will return 0 until the tables are added to the schema
     const tastingNotesCount = 0;
-    const activeListingsCount = 0;
     const reputationRating = 0.0;
 
     return NextResponse.json({
