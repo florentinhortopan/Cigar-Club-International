@@ -57,6 +57,8 @@ model User {
   activities       Activity[]
   listings         Listing[]
   humidorItems     HumidorItem[]
+  posts            Post[]
+  comments         Comment[]
 
   @@index([branch_id])
   @@index([humidor_public])
@@ -169,6 +171,7 @@ model Cigar {
   humidorItems  HumidorItem[]
   pairings      Pairing[]
   listings      Listing[]
+  posts         Post[]
 
   @@index([line_id])
 }
@@ -215,6 +218,7 @@ model HumidorItem {
 
   user  User  @relation(fields: [user_id], references: [id], onDelete: Cascade)
   cigar Cigar @relation(fields: [cigar_id], references: [id], onDelete: Cascade)
+  posts Post[]
 
   @@index([user_id])
   @@index([cigar_id])
@@ -337,4 +341,66 @@ model Listing {
   @@index([cigar_id])
   @@index([humidor_item_id])
   @@index([region, status])
+}
+
+// =============================================================================
+// COMMUNITY FEED (Posts & Comments)
+// =============================================================================
+
+model Post {
+  id          String   @id @default(cuid())
+  user_id     String
+  user        User     @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  
+  content     String   @db.Text
+  image_urls  String?  // JSON array of image URLs
+  
+  // Optional references to cigars or humidor items
+  cigar_id    String?
+  cigar       Cigar?   @relation(fields: [cigar_id], references: [id], onDelete: SetNull)
+  humidor_item_id String?
+  humidorItem HumidorItem? @relation(fields: [humidor_item_id], references: [id], onDelete: SetNull)
+  
+  // Engagement metrics
+  like_count  Int      @default(0)
+  comment_count Int    @default(0)
+  
+  // Moderation
+  is_deleted  Boolean  @default(false)
+  deleted_at  DateTime?
+  
+  created_at  DateTime @default(now())
+  updated_at  DateTime @updatedAt
+  
+  comments    Comment[]
+  
+  @@index([user_id, created_at])
+  @@index([created_at])
+  @@index([cigar_id])
+  @@index([humidor_item_id])
+  @@index([is_deleted])
+}
+
+model Comment {
+  id          String   @id @default(cuid())
+  post_id     String
+  post        Post     @relation(fields: [post_id], references: [id], onDelete: Cascade)
+  
+  user_id     String
+  user        User     @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  
+  content     String   @db.Text
+  image_url   String?  // Single image per comment (optional)
+  
+  // Moderation
+  is_deleted  Boolean  @default(false)
+  deleted_at  DateTime?
+  
+  created_at  DateTime @default(now())
+  updated_at  DateTime @updatedAt
+  
+  @@index([post_id, created_at])
+  @@index([user_id])
+  @@index([created_at])
+  @@index([is_deleted])
 }

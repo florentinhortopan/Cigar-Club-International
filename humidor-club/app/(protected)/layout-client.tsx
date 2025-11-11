@@ -1,6 +1,6 @@
 'use client';
 
-import { Home, Package, Search, TrendingUp, User, Users } from 'lucide-react';
+import { Home, Package, Search, TrendingUp, User, Users, MessageSquare } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { ReactNode } from 'react';
@@ -13,6 +13,7 @@ interface NavItem {
 
 const navItems: NavItem[] = [
   { href: '/dashboard', label: 'Home', icon: Home },
+  { href: '/community', label: 'Community', icon: MessageSquare },
   { href: '/cigars', label: 'Cigars', icon: Search },
   { href: '/humidor', label: 'Humidor', icon: Package },
   { href: '/marketplace', label: 'Market', icon: TrendingUp },
@@ -60,7 +61,7 @@ export function ProtectedLayoutClient({ children }: ProtectedLayoutClientProps) 
             <nav className="flex-1 px-3 space-y-1">
               {navItems.map((item) => {
                 const Icon = item.icon;
-                const isActive = pathname === item.href;
+                const isActive = pathname === item.href || (item.href !== '/dashboard' && pathname?.startsWith(item.href));
                 
                 return (
                   <Link
